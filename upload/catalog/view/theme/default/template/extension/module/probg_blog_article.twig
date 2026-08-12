@@ -1,0 +1,18 @@
+{{ header }}
+<div id="common-probg-blog-article" class="container">
+  <ul class="breadcrumb">{% for breadcrumb in breadcrumbs %}<li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>{% endfor %}</ul>
+  <div class="row">{{ column_left }}
+    {% if column_left and column_right %}{% set class = 'col-sm-6' %}{% elseif column_left or column_right %}{% set class = 'col-sm-9' %}{% else %}{% set class = 'col-sm-12' %}{% endif %}
+    <div id="content" class="{{ class }}">{{ content_top }}
+      <article><h1>{{ heading_title }}</h1><p class="text-muted"><small>{{ text_category }}: <a href="{{ category.href }}">{{ category.title }}</a> · {{ text_published }}: {{ date_added }}{% if date_modified != date_added %} · {{ text_modified }}: {{ date_modified }}{% endif %}</small></p>
+        {% if image %}<p><img src="{{ image }}" alt="{{ heading_title }}" class="img-responsive"></p>{% endif %}
+        {% if short_description %}<div class="lead">{{ short_description }}</div>{% endif %}
+        <div class="probg-blog-article-body">{{ description }}</div>
+        {% if images %}<div class="row probg-blog-gallery">{% for image in images %}<div class="col-xs-6 col-sm-4"><a href="{{ image.popup }}" class="thumbnail"><img src="{{ image.thumb }}" alt="{{ heading_title }}"></a></div>{% endfor %}</div>{% endif %}
+      </article>{{ content_bottom }}</div>{{ column_right }}
+  </div>
+</div>
+{% if images %}<script type="text/javascript"><!--
+$('.probg-blog-gallery').magnificPopup({type:'image',delegate:'a',gallery:{enabled:true}});
+//--></script>{% endif %}
+{{ footer }}

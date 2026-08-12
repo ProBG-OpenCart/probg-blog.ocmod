@@ -1,0 +1,2 @@
+<?php
+$_['heading_title']='Блог';$_['text_home']='Начало';$_['text_categories']='Категории';$_['text_articles']='Статии';$_['text_read_more']='Прочети още';$_['text_no_results']='Няма публикувани статии.';$_['text_error']='Страницата не е намерена!';$_['text_pagination']='Показани %d до %d от %d (%d страници)';$_['text_category']='Категория';$_['text_published']='Публикувано';$_['text_modified']='Обновено';$_['date_format_short']='d.m.Y';

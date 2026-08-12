@@ -1,0 +1,2 @@
+<?php
+$_['heading_title']='Blog';$_['text_home']='Home';$_['text_categories']='Categories';$_['text_articles']='Articles';$_['text_read_more']='Read more';$_['text_no_results']='There are no published articles.';$_['text_error']='Page not found!';$_['text_pagination']='Showing %d to %d of %d (%d Pages)';$_['text_category']='Category';$_['text_published']='Published';$_['text_modified']='Updated';$_['date_format_short']='d/m/Y';

@@ -1,0 +1,1 @@
+<div class="probg-blog-categories-module"><h3>{{ heading_title }}</h3><ul class="list-unstyled">{% for category in categories %}<li><a href="{{ category.href }}">{{ category.title }}</a>{% if show_count %} <span class="badge">{{ category.article_count }}</span>{% endif %}</li>{% endfor %}</ul></div>
