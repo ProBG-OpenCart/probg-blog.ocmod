@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.10.0] - 2026-08-14
+
+### feat
+
+- Integrated **Articles** as a main ProBG Blog administration tab alongside Settings and Categories.
+- Added the shared **Settings / Categories / Articles** navigation to the article list, add and edit screens.
+- Kept the article editor organized in its existing Content, Data and Images sub-tabs.
+- Preserved the complete article CRUD workflow, filters, pagination, image manager integration and multilingual content fields inside the new tabbed administration flow.
+
+### fix
+
+- The article list filter now always receives the current `user_token`, preventing filtered administration URLs from losing authentication context.
+- Updated the article SEO URL help text to match the implemented automatic `ID + transliterated title` generation behavior.
+
+### changed
+
+- Internal module version and OCMOD package version updated to `0.10.0`.
+- Administration stage updated to Stage 10.
+
 ## [0.9.0] - 2026-08-14
 
 ### feat

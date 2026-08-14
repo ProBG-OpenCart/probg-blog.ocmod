@@ -1,11 +1,12 @@
 # ProBG Blog — Development stages
 
-- 0.1.0 — Base module, install/uninstall, schema and permissions — complete.
-- 0.2.0 — Category CRUD — complete.
-- 0.3.0 — Article CRUD — complete.
-- 0.4.0 — Blog section settings — complete.
-- 0.5.0 — Storefront — complete.
-- 0.6.0 — SEO automation, canonical and redirects — complete.
-- 0.7.0 — Open Graph, Twitter Cards and JSON-LD — complete.
-- 0.8.0 — Sitemap, cache and layout modules — complete.
-- 0.9.0 — Integrated Categories tab, multilingual tags, multi-store and category layout settings — complete.
+- 0.1.0 — base module, database, permissions and admin menu.
+- 0.2.0 — category CRUD and multilingual SEO data.
+- 0.3.0 — article CRUD, main/additional images and filters.
+- 0.4.0 — section settings, ordering, limits and image sizes.
+- 0.5.0 — storefront section, category/article pages, breadcrumbs, pagination and gallery.
+- 0.6.0 — automatic Meta Title, Bulgarian transliteration, ID-based SEO URL, canonical and redirect logic.
+- 0.7.0 — Open Graph, Twitter Cards and JSON-LD.
+- 0.8.0 — sitemap integration, cache and additional layout modules.
+- 0.9.0 — integrated Categories tab, multilingual tags, stores and layout override.
+- 0.10.0 — integrated Articles tab with list, add and edit screens in the shared administration navigation.

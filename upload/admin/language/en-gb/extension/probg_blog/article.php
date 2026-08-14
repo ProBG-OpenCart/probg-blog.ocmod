@@ -22,6 +22,11 @@ $_['text_main_image'] = 'Main Image';
 $_['text_additional_images'] = 'Additional Images';
 $_['text_automatic'] = 'Will be set automatically when saved';
 
+// Main module tabs
+$_['tab_settings'] = 'Settings';
+$_['tab_categories'] = 'Categories';
+$_['tab_articles'] = 'Articles';
+
 // Column
 $_['column_image'] = 'Image';
 $_['column_id'] = 'ID';
@@ -51,7 +56,7 @@ $_['entry_date_added_from'] = 'Added From';
 $_['entry_date_added_to'] = 'Added To';
 
 // Help
-$_['help_seo_keyword'] = 'Enter a unique SEO address without spaces. Automatic ID and hierarchical routing will be added during the SEO stage.';
+$_['help_seo_keyword'] = 'Leave empty to generate automatically as ID + transliterated title. A manually entered value is preserved.';
 
 // Button
 $_['button_add'] = 'Add New';
