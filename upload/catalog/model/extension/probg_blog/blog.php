@@ -2,6 +2,7 @@
 class ModelExtensionProbgBlogBlog extends Model {
     private $store_table_exists = null;
     private $layout_table_exists = null;
+    private $related_table_exists = null;
 
     public function getCategories() {
         $key = $this->key('categories');
@@ -82,6 +83,18 @@ class ModelExtensionProbgBlogBlog extends Model {
         return $rows;
     }
 
+    public function getArticleRelatedProducts($id) {
+        if (!$this->hasRelatedTable()) return array();
+        $key = $this->key('related.' . (int)$id);
+        $cached = $this->getCache($key);
+        if ($cached !== false) return $cached;
+        $product_ids = array();
+        $query = $this->db->query("SELECT product_id FROM `" . DB_PREFIX . "probg_blog_article_related` WHERE article_id='" . (int)$id . "' ORDER BY product_id ASC");
+        foreach ($query->rows as $row) $product_ids[] = (int)$row['product_id'];
+        $this->setCache($key, $product_ids);
+        return $product_ids;
+    }
+
     public function getCategoryLayoutId($category_id) {
         if (!$this->hasLayoutTable()) return 0;
         $query = $this->db->query("SELECT layout_id FROM `" . DB_PREFIX . "probg_blog_category_to_layout` WHERE category_id='" . (int)$category_id . "' AND store_id='" . (int)$this->config->get('config_store_id') . "'");
@@ -119,6 +132,13 @@ class ModelExtensionProbgBlogBlog extends Model {
         $query = $this->db->query("SHOW TABLES LIKE '" . $this->db->escape(DB_PREFIX . "probg_blog_category_to_layout") . "'");
         $this->layout_table_exists = (bool)$query->num_rows;
         return $this->layout_table_exists;
+    }
+
+    private function hasRelatedTable() {
+        if ($this->related_table_exists !== null) return $this->related_table_exists;
+        $query = $this->db->query("SHOW TABLES LIKE '" . $this->db->escape(DB_PREFIX . "probg_blog_article_related") . "'");
+        $this->related_table_exists = (bool)$query->num_rows;
+        return $this->related_table_exists;
     }
 
     private function key($suffix){return 'probg_blog.'.(int)$this->config->get('config_store_id').'.'.(int)$this->config->get('config_language_id').'.'.$suffix;}

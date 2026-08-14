@@ -1,24 +1,30 @@
 <?php
 class ModelExtensionProbgBlogArticle extends Model {
     public function addArticle($data) {
+        $this->ensureRelatedTable();
         $this->db->query("INSERT INTO `" . DB_PREFIX . "probg_blog_article` SET category_id = '" . (int)$data['category_id'] . "', image = '" . $this->db->escape(isset($data['image']) ? $data['image'] : '') . "', sort_order = '" . (int)$data['sort_order'] . "', status = '" . (int)$data['status'] . "', date_added = NOW(), date_modified = NOW()");
         $article_id = $this->db->getLastId();
         $this->saveDescriptions($article_id, $data);
         $this->saveImages($article_id, $data);
+        $this->saveRelatedProducts($article_id, $data);
         $this->saveSeoUrls($article_id, $data);
         $this->clearCache();
         return $article_id;
     }
 
     public function editArticle($article_id, $data) {
+        $this->ensureRelatedTable();
         $this->db->query("UPDATE `" . DB_PREFIX . "probg_blog_article` SET category_id = '" . (int)$data['category_id'] . "', image = '" . $this->db->escape(isset($data['image']) ? $data['image'] : '') . "', sort_order = '" . (int)$data['sort_order'] . "', status = '" . (int)$data['status'] . "', date_modified = NOW() WHERE article_id = '" . (int)$article_id . "'");
         $this->saveDescriptions($article_id, $data);
         $this->saveImages($article_id, $data);
+        $this->saveRelatedProducts($article_id, $data);
         $this->saveSeoUrls($article_id, $data);
         $this->clearCache();
     }
 
     public function deleteArticle($article_id) {
+        $this->ensureRelatedTable();
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "probg_blog_article_related` WHERE article_id = '" . (int)$article_id . "'");
         $this->db->query("DELETE FROM `" . DB_PREFIX . "probg_blog_article` WHERE article_id = '" . (int)$article_id . "'");
         $this->db->query("DELETE FROM `" . DB_PREFIX . "probg_blog_article_description` WHERE article_id = '" . (int)$article_id . "'");
         $this->db->query("DELETE FROM `" . DB_PREFIX . "probg_blog_article_image` WHERE article_id = '" . (int)$article_id . "'");
@@ -57,6 +63,14 @@ class ModelExtensionProbgBlogArticle extends Model {
 
     public function getArticleImages($article_id) {
         return $this->db->query("SELECT * FROM `" . DB_PREFIX . "probg_blog_article_image` WHERE article_id='" . (int)$article_id . "' ORDER BY sort_order ASC, article_image_id ASC")->rows;
+    }
+
+    public function getArticleRelatedProducts($article_id) {
+        $this->ensureRelatedTable();
+        $product_ids = array();
+        $query = $this->db->query("SELECT product_id FROM `" . DB_PREFIX . "probg_blog_article_related` WHERE article_id='" . (int)$article_id . "' ORDER BY product_id ASC");
+        foreach ($query->rows as $row) $product_ids[] = (int)$row['product_id'];
+        return $product_ids;
     }
 
     public function getArticles($data=array()) {
@@ -108,6 +122,19 @@ class ModelExtensionProbgBlogArticle extends Model {
         }
     }
 
+    private function saveRelatedProducts($article_id, $data) {
+        $this->ensureRelatedTable();
+        $this->db->query("DELETE FROM `" . DB_PREFIX . "probg_blog_article_related` WHERE article_id='" . (int)$article_id . "'");
+        if (empty($data['article_related']) || !is_array($data['article_related'])) return;
+        $seen = array();
+        foreach ($data['article_related'] as $product_id) {
+            $product_id = (int)$product_id;
+            if ($product_id < 1 || isset($seen[$product_id])) continue;
+            $seen[$product_id] = true;
+            $this->db->query("INSERT INTO `" . DB_PREFIX . "probg_blog_article_related` SET article_id='" . (int)$article_id . "', product_id='" . $product_id . "'");
+        }
+    }
+
     private function saveSeoUrls($article_id,$data) {
         $this->db->query("DELETE FROM `".DB_PREFIX."seo_url` WHERE query='probg_blog_article_id=".(int)$article_id."'");
         if(empty($data['article_description'])||!is_array($data['article_description']))return;
@@ -135,6 +162,10 @@ class ModelExtensionProbgBlogArticle extends Model {
         $query=$this->db->query("SELECT store_id FROM `".DB_PREFIX."probg_blog_category_to_store` WHERE category_id='".(int)$category_id."'");
         foreach($query->rows as $row)$stores[]=(int)$row['store_id'];
         return array_values(array_unique($stores));
+    }
+
+    private function ensureRelatedTable() {
+        $this->db->query("CREATE TABLE IF NOT EXISTS `" . DB_PREFIX . "probg_blog_article_related` (`article_id` INT(11) UNSIGNED NOT NULL, `product_id` INT(11) UNSIGNED NOT NULL, PRIMARY KEY (`article_id`,`product_id`), KEY `product_id` (`product_id`)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
     }
 
     private function clearCache(){ $this->cache->delete('probg_blog'); }

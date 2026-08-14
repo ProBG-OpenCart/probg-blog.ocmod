@@ -18,6 +18,7 @@ $_['text_confirm'] = 'Are you sure?';
 $_['text_content'] = 'Content';
 $_['text_data'] = 'Data';
 $_['text_images'] = 'Images';
+$_['text_related'] = 'Related Products';
 $_['text_main_image'] = 'Main Image';
 $_['text_additional_images'] = 'Additional Images';
 $_['text_automatic'] = 'Will be set automatically when saved';
@@ -48,6 +49,7 @@ $_['entry_meta_keyword'] = 'Meta Keywords';
 $_['entry_seo_keyword'] = 'SEO URL';
 $_['entry_category'] = 'Category';
 $_['entry_image'] = 'Image';
+$_['entry_related'] = 'Related Products';
 $_['entry_sort_order'] = 'Sort Order';
 $_['entry_status'] = 'Status';
 $_['entry_date_added'] = 'Date Added';
@@ -57,6 +59,7 @@ $_['entry_date_added_to'] = 'Added To';
 
 // Help
 $_['help_seo_keyword'] = 'Leave empty to generate automatically as ID + transliterated title. A manually entered value is preserved.';
+$_['help_related'] = 'Start typing a product name and select it from the suggestions. Multiple products can be added.';
 
 // Button
 $_['button_add'] = 'Add New';

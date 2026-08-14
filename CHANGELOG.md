@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.11.0] - 2026-08-14
+
+### feat
+
+- Added a **Related Products** tab to the blog article add/edit form.
+- Added the standard OpenCart product autocomplete selector using `catalog/product/autocomplete`.
+- Added support for selecting multiple related products and removing selected items before saving.
+- Added `{DB_PREFIX}probg_blog_article_related` for article-to-product relations.
+- Added automatic relation persistence on article create/update and cleanup on article deletion.
+- Added duplicate protection when saving related product IDs.
+- Added related product output below the public article using standard OpenCart `product-thumb` / `product-layout` classes.
+- Public related products are resolved through the standard catalog product model, so disabled, unavailable or non-store products are not rendered.
+
+### changed
+
+- Internal module version and OCMOD package version updated to `0.11.0`.
+- Administration stage updated to Stage 11.
+- Article editor tabs are now **Content / Data / Images / Related Products**.
+- README and development stages documentation updated.
+
 ## [0.10.0] - 2026-08-14
 
 ### feat
