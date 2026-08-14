@@ -10,4 +10,5 @@
 - 0.8.0 — sitemap integration, cache and additional layout modules.
 - 0.9.0 — integrated Categories tab, multilingual tags, stores and layout override.
 - 0.10.0 — integrated Articles tab with list, add and edit screens in the shared administration navigation.
-- 0.11.0 — standard OpenCart related product autocomplete and article-to-product relations.
+- 0.11.0 — related products for articles with standard OpenCart autocomplete and storefront output.
+- 0.12.0 — built-in frontend blog menu inside the existing ProBG Blog installation and configurable layout output mode.

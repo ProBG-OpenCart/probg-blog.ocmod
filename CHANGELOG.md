@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.12.0] - 2026-08-14
+
+### feat
+
+- Added built-in blog navigation menu to the existing `ProBG Blog` module.
+- Added a **Menu** settings tab with multilingual menu title.
+- Added layout output mode selection: **Latest Articles** or **Menu**.
+- Added menu options for blog home link, categories, articles, category filter, article limit and sorting.
+- Added a dedicated storefront menu template rendered by the existing `extension/module/probg_blog` controller.
+- Menu installation is part of the existing ProBG Blog installation; no second module install is required.
+
+### fix
+
+- Upgrading from 0.11.0 keeps existing layout blocks in **Latest Articles** mode, preventing unexpected storefront changes.
+- Menu settings receive safe defaults during migration.
+
+### changed
+
+- Internal module version and OCMOD package version updated to `0.12.0`.
+- Administration stage updated to Stage 12.
+
 ## [0.11.0] - 2026-08-14
 
 ### feat

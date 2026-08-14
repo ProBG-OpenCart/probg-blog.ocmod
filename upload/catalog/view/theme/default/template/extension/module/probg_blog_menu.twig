@@ -1,0 +1,14 @@
+<div class="panel panel-default probg-blog-menu">
+  {% if heading_title %}<div class="panel-heading"><h3 class="panel-title">{{ heading_title }}</h3></div>{% endif %}
+  <div class="list-group">
+    {% if show_blog %}<a href="{{ blog_url }}" class="list-group-item"><i class="fa fa-home"></i> {{ text_blog_home }}</a>{% endif %}
+    {% if categories %}
+      <div class="list-group-item active">{{ text_categories }}</div>
+      {% for category in categories %}<a href="{{ category.href }}" class="list-group-item">{{ category.title }} <span class="badge">{{ category.article_count }}</span></a>{% endfor %}
+    {% endif %}
+    {% if articles %}
+      <div class="list-group-item active">{{ text_articles }}</div>
+      {% for article in articles %}<a href="{{ article.href }}" class="list-group-item">{{ article.title }}{% if article.category_title %}<br><small class="text-muted">{{ article.category_title }}</small>{% endif %}</a>{% endfor %}
+    {% endif %}
+  </div>
+</div>
