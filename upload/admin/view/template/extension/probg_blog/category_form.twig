@@ -1,39 +1,37 @@
 {{ header }}{{ column_left }}
 <div id="content">
-  <div class="page-header">
-    <div class="container-fluid">
-      <div class="pull-right">
-        <button type="submit" form="form-category" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
-        <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
-      </div>
-      <h1>{{ heading_title }}</h1>
-      <ul class="breadcrumb">{% for breadcrumb in breadcrumbs %}<li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>{% endfor %}</ul>
-    </div>
-  </div>
+  <div class="page-header"><div class="container-fluid"><div class="pull-right"><button type="submit" form="form-category" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button><a href="{{ cancel }}" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a></div><h1>{{ heading_title }}</h1><ul class="breadcrumb">{% for breadcrumb in breadcrumbs %}<li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>{% endfor %}</ul></div></div>
   <div class="container-fluid">
     {% if error_warning %}<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>{% endif %}
+    <ul class="nav nav-tabs"><li><a href="{{ settings_url }}">{{ tab_settings }}</a></li><li class="active"><a href="{{ categories_url }}">{{ tab_categories }}</a></li><li><a href="{{ articles_url }}">{{ tab_articles }}</a></li></ul>
     <div class="panel panel-default"><div class="panel-heading"><h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_form }}</h3></div><div class="panel-body">
       <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-category" class="form-horizontal">
-        <ul class="nav nav-tabs"><li class="active"><a href="#tab-general" data-toggle="tab">{{ text_general }}</a></li><li><a href="#tab-data" data-toggle="tab">{{ text_data }}</a></li></ul>
-        <div class="tab-content"><div class="tab-pane active" id="tab-general">
-          <ul class="nav nav-tabs" id="language">{% for language in languages %}<li><a href="#language{{ language.language_id }}" data-toggle="tab"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}" /> {{ language.name }}</a></li>{% endfor %}</ul>
-          <div class="tab-content">{% for language in languages %}<div class="tab-pane" id="language{{ language.language_id }}">
-            <div class="form-group required"><label class="col-sm-2 control-label">{{ entry_title }}</label><div class="col-sm-10"><input type="text" name="category_description[{{ language.language_id }}][title]" value="{{ category_description[language.language_id] ? category_description[language.language_id].title : '' }}" class="form-control" />{% if error_title[language.language_id] %}<div class="text-danger">{{ error_title[language.language_id] }}</div>{% endif %}</div></div>
-            <div class="form-group"><label class="col-sm-2 control-label">{{ entry_description }}</label><div class="col-sm-10"><textarea name="category_description[{{ language.language_id }}][description]" data-toggle="summernote" data-lang="{{ summernote }}" class="form-control">{{ category_description[language.language_id] ? category_description[language.language_id].description : '' }}</textarea></div></div>
-            <div class="form-group"><label class="col-sm-2 control-label">{{ entry_meta_title }}</label><div class="col-sm-10"><input type="text" name="category_description[{{ language.language_id }}][meta_title]" value="{{ category_description[language.language_id] ? category_description[language.language_id].meta_title : '' }}" class="form-control" /></div></div>
-            <div class="form-group"><label class="col-sm-2 control-label">{{ entry_meta_description }}</label><div class="col-sm-10"><textarea name="category_description[{{ language.language_id }}][meta_description]" rows="4" class="form-control">{{ category_description[language.language_id] ? category_description[language.language_id].meta_description : '' }}</textarea></div></div>
-            <div class="form-group"><label class="col-sm-2 control-label">{{ entry_meta_keyword }}</label><div class="col-sm-10"><textarea name="category_description[{{ language.language_id }}][meta_keyword]" rows="3" class="form-control">{{ category_description[language.language_id] ? category_description[language.language_id].meta_keyword : '' }}</textarea></div></div>
-            <div class="form-group"><label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_seo_keyword }}">{{ entry_seo_keyword }}</span></label><div class="col-sm-10"><input type="text" name="category_description[{{ language.language_id }}][seo_keyword]" value="{{ category_description[language.language_id] ? category_description[language.language_id].seo_keyword : '' }}" class="form-control" />{% if error_seo_keyword[language.language_id] %}<div class="text-danger">{{ error_seo_keyword[language.language_id] }}</div>{% endif %}</div></div>
-          </div>{% endfor %}</div>
-        </div><div class="tab-pane" id="tab-data">
-          <div class="form-group"><label class="col-sm-2 control-label">{{ entry_sort_order }}</label><div class="col-sm-10"><input type="number" name="sort_order" value="{{ sort_order }}" class="form-control" /></div></div>
-          <div class="form-group"><label class="col-sm-2 control-label">{{ entry_status }}</label><div class="col-sm-10"><select name="status" class="form-control"><option value="1"{% if status %} selected{% endif %}>{{ text_enabled }}</option><option value="0"{% if not status %} selected{% endif %}>{{ text_disabled }}</option></select></div></div>
-          <div class="form-group"><label class="col-sm-2 control-label">{{ entry_date_added }}</label><div class="col-sm-10"><p class="form-control-static">{{ date_added }}</p></div></div>
-          <div class="form-group"><label class="col-sm-2 control-label">{{ entry_date_modified }}</label><div class="col-sm-10"><p class="form-control-static">{{ date_modified }}</p></div></div>
-        </div></div>
+        <ul class="nav nav-tabs"><li class="active"><a href="#tab-general" data-toggle="tab">{{ text_general }}</a></li><li><a href="#tab-settings" data-toggle="tab">{{ text_settings }}</a></li></ul>
+        <div class="tab-content">
+          <div class="tab-pane active" id="tab-general">
+            <ul class="nav nav-tabs" id="language">{% for language in languages %}<li><a href="#language{{ language.language_id }}" data-toggle="tab"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}" /> {{ language.name }}</a></li>{% endfor %}</ul>
+            <div class="tab-content">{% for language in languages %}<div class="tab-pane" id="language{{ language.language_id }}">
+              <div class="form-group required"><label class="col-sm-2 control-label">{{ entry_title }}</label><div class="col-sm-10"><input type="text" name="category_description[{{ language.language_id }}][title]" value="{{ category_description[language.language_id] ? category_description[language.language_id].title : '' }}" class="form-control" />{% if error_title[language.language_id] %}<div class="text-danger">{{ error_title[language.language_id] }}</div>{% endif %}</div></div>
+              <div class="form-group"><label class="col-sm-2 control-label">{{ entry_description }}</label><div class="col-sm-10"><textarea name="category_description[{{ language.language_id }}][description]" data-toggle="summernote" data-lang="{{ summernote }}" class="form-control">{{ category_description[language.language_id] ? category_description[language.language_id].description : '' }}</textarea></div></div>
+              <div class="form-group"><label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_seo_keyword }}">{{ entry_seo_keyword }}</span></label><div class="col-sm-10"><input type="text" name="category_description[{{ language.language_id }}][seo_keyword]" value="{{ category_description[language.language_id] ? category_description[language.language_id].seo_keyword : '' }}" placeholder="{{ text_automatic }}" class="form-control" />{% if error_seo_keyword[language.language_id] %}<div class="text-danger">{{ error_seo_keyword[language.language_id] }}</div>{% endif %}</div></div>
+              <div class="form-group"><label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_tags }}">{{ entry_tags }}</span></label><div class="col-sm-10"><input type="text" name="category_description[{{ language.language_id }}][tags]" value="{{ category_description[language.language_id] ? category_description[language.language_id].tags : '' }}" class="form-control" /></div></div>
+              <div class="form-group"><label class="col-sm-2 control-label">{{ entry_meta_title }}</label><div class="col-sm-10"><input type="text" name="category_description[{{ language.language_id }}][meta_title]" value="{{ category_description[language.language_id] ? category_description[language.language_id].meta_title : '' }}" placeholder="{{ text_automatic }}" class="form-control" /></div></div>
+              <div class="form-group"><label class="col-sm-2 control-label">{{ entry_meta_description }}</label><div class="col-sm-10"><textarea name="category_description[{{ language.language_id }}][meta_description]" rows="4" class="form-control">{{ category_description[language.language_id] ? category_description[language.language_id].meta_description : '' }}</textarea></div></div>
+              <div class="form-group"><label class="col-sm-2 control-label">{{ entry_meta_keyword }}</label><div class="col-sm-10"><textarea name="category_description[{{ language.language_id }}][meta_keyword]" rows="3" class="form-control">{{ category_description[language.language_id] ? category_description[language.language_id].meta_keyword : '' }}</textarea></div></div>
+            </div>{% endfor %}</div>
+            <div class="form-group"><label class="col-sm-2 control-label">{{ entry_sort_order }}</label><div class="col-sm-10"><input type="number" name="sort_order" value="{{ sort_order }}" class="form-control" /></div></div>
+            <div class="form-group"><label class="col-sm-2 control-label">{{ entry_status }}</label><div class="col-sm-10"><select name="status" class="form-control"><option value="1"{% if status %} selected{% endif %}>{{ text_enabled }}</option><option value="0"{% if not status %} selected{% endif %}>{{ text_disabled }}</option></select></div></div>
+          </div>
+          <div class="tab-pane" id="tab-settings">
+            <div class="form-group"><label class="col-sm-2 control-label">{{ entry_store }}</label><div class="col-sm-10"><div class="well well-sm" style="height:150px;overflow:auto;">{% for store in stores %}<div class="checkbox"><label><input type="checkbox" name="category_store[]" value="{{ store.store_id }}"{% if store.store_id in category_store %} checked{% endif %} /> {{ store.name }}</label></div>{% endfor %}</div></div></div>
+            <div class="form-group"><label class="col-sm-2 control-label">{{ entry_layout }}</label><div class="col-sm-10">{% for store in stores %}<div class="row" style="margin-bottom:10px;"><div class="col-sm-4"><strong>{{ store.name }}</strong></div><div class="col-sm-8"><select name="category_layout[{{ store.store_id }}]" class="form-control"><option value="0">{{ text_default }}</option>{% for layout in layouts %}<option value="{{ layout.layout_id }}"{% if category_layout[store.store_id] is defined and category_layout[store.store_id] == layout.layout_id %} selected{% endif %}>{{ layout.name }}</option>{% endfor %}</select></div></div>{% endfor %}</div></div>
+            <div class="form-group"><label class="col-sm-2 control-label">{{ entry_date_added }}</label><div class="col-sm-10"><p class="form-control-static">{{ date_added }}</p></div></div>
+            <div class="form-group"><label class="col-sm-2 control-label">{{ entry_date_modified }}</label><div class="col-sm-10"><p class="form-control-static">{{ date_modified }}</p></div></div>
+          </div>
+        </div>
       </form>
     </div></div>
   </div>
 </div>
-<script type="text/javascript">$('#language a:first').tab('show');</script>
+<script>$('#language a:first').tab('show');</script>
 {{ footer }}

@@ -4,6 +4,7 @@
   <div class="container-fluid">
     {% if error_warning %}<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>{% endif %}
     {% if success %}<div class="alert alert-success alert-dismissible"><i class="fa fa-check-circle"></i> {{ success }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>{% endif %}
+    <ul class="nav nav-tabs"><li class="active"><a href="{{ settings_url }}">{{ text_settings }}</a></li><li><a href="{{ categories_url }}">{{ text_categories }}</a></li><li><a href="{{ articles_url }}">{{ text_articles }}</a></li></ul>
     <div class="row"><div class="col-sm-6"><div class="tile"><div class="tile-heading">{{ text_categories }}</div><div class="tile-body"><i class="fa fa-folder-open"></i><h2 class="pull-right">{{ total_categories }}</h2></div><div class="tile-footer"><a href="{{ categories_url }}">{{ button_categories }}</a></div></div></div><div class="col-sm-6"><div class="tile"><div class="tile-heading">{{ text_articles }}</div><div class="tile-body"><i class="fa fa-file-text-o"></i><h2 class="pull-right">{{ total_articles }}</h2></div><div class="tile-footer"><a href="{{ articles_url }}">{{ button_articles }}</a></div></div></div></div>
     <div class="panel panel-default"><div class="panel-heading"><h3 class="panel-title"><i class="fa fa-pencil"></i> {{ text_edit }}</h3></div><div class="panel-body">
       <div class="alert alert-info"><i class="fa fa-info-circle"></i> {{ text_stage_info }} &nbsp; <strong>{{ text_version }}:</strong> {{ version }} &nbsp; <strong>{{ text_stage }}:</strong> {{ stage }}</div>
@@ -11,9 +12,9 @@
         <ul class="nav nav-tabs"><li class="active"><a href="#tab-general" data-toggle="tab">{{ text_general }}</a></li><li><a href="#tab-content" data-toggle="tab">{{ text_content }}</a></li><li><a href="#tab-images" data-toggle="tab">{{ text_images }}</a></li><li><a href="#tab-integrations" data-toggle="tab">{{ text_integrations }}</a></li></ul>
         <div class="tab-content">
           <div class="tab-pane active" id="tab-general">
-            <div class="form-group"><label class="col-sm-2 control-label" for="input-status">{{ entry_status }}</label><div class="col-sm-10"><select name="module_probg_blog_status" id="input-status" class="form-control"><option value="1"{% if module_probg_blog_status %} selected{% endif %}>{{ text_enabled }}</option><option value="0"{% if not module_probg_blog_status %} selected{% endif %}>{{ text_disabled }}</option></select></div></div>
-            <div class="form-group"><label class="col-sm-2 control-label" for="input-sort">{{ entry_sort }}</label><div class="col-sm-10"><select name="module_probg_blog_sort" id="input-sort" class="form-control"><option value="date"{% if module_probg_blog_sort == 'date' %} selected{% endif %}>{{ text_date }}</option><option value="sort_order"{% if module_probg_blog_sort == 'sort_order' %} selected{% endif %}>{{ text_sort_order }}</option></select></div></div>
-            <div class="form-group{% if error_limit %} has-error{% endif %}"><label class="col-sm-2 control-label" for="input-limit">{{ entry_limit }}</label><div class="col-sm-10"><input type="number" min="1" max="100" name="module_probg_blog_limit" value="{{ module_probg_blog_limit }}" id="input-limit" class="form-control">{% if error_limit %}<div class="text-danger">{{ error_limit }}</div>{% endif %}</div></div>
+            <div class="form-group"><label class="col-sm-2 control-label">{{ entry_status }}</label><div class="col-sm-10"><select name="module_probg_blog_status" class="form-control"><option value="1"{% if module_probg_blog_status %} selected{% endif %}>{{ text_enabled }}</option><option value="0"{% if not module_probg_blog_status %} selected{% endif %}>{{ text_disabled }}</option></select></div></div>
+            <div class="form-group"><label class="col-sm-2 control-label">{{ entry_sort }}</label><div class="col-sm-10"><select name="module_probg_blog_sort" class="form-control"><option value="date"{% if module_probg_blog_sort == 'date' %} selected{% endif %}>{{ text_date }}</option><option value="sort_order"{% if module_probg_blog_sort == 'sort_order' %} selected{% endif %}>{{ text_sort_order }}</option></select></div></div>
+            <div class="form-group{% if error_limit %} has-error{% endif %}"><label class="col-sm-2 control-label">{{ entry_limit }}</label><div class="col-sm-10"><input type="number" min="1" max="100" name="module_probg_blog_limit" value="{{ module_probg_blog_limit }}" class="form-control">{% if error_limit %}<div class="text-danger">{{ error_limit }}</div>{% endif %}</div></div>
           </div>
           <div class="tab-pane" id="tab-content">
             <ul class="nav nav-tabs" id="language">{% for language in languages %}<li><a href="#language{{ language.language_id }}" data-toggle="tab"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}"> {{ language.name }}</a></li>{% endfor %}</ul>
@@ -41,7 +42,5 @@
     </div></div>
   </div>
 </div>
-<script type="text/javascript"><!--
-$('#language a:first').tab('show');
-//--></script>
+<script>$('#language a:first').tab('show');</script>
 {{ footer }}

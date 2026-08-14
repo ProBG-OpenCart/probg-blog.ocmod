@@ -2,7 +2,7 @@
 <modification>
   <name>ProBG Blog</name>
   <code>probg_blog</code>
-  <version>0.8.0</version>
+  <version>0.9.0</version>
   <author>ProBG</author>
   <link>https://probg.com/</link>
 
@@ -28,60 +28,43 @@
   </file>
 
   <file path="catalog/controller/startup/seo_url.php">
-    <operation error="skip">
-      <search><![CDATA[if ($url[0] == 'manufacturer_id') {]]></search>
-      <add position="before"><![CDATA[
-                    if ($url[0] == 'probg_blog_category_id') {
-                        $this->request->get['probg_blog_category_id'] = $url[1];
-                    }
-                    if ($url[0] == 'probg_blog_article_id') {
-                        $this->request->get['probg_blog_article_id'] = $url[1];
-                    }
-      ]]></add>
-    </operation>
-    <operation error="skip">
-      <search><![CDATA[if ($query->row['query'] && $url[0] != 'information_id' && $url[0] != 'manufacturer_id' && $url[0] != 'category_id' && $url[0] != 'product_id') {]]></search>
-      <add position="replace"><![CDATA[if ($query->row['query'] && $url[0] != 'information_id' && $url[0] != 'manufacturer_id' && $url[0] != 'category_id' && $url[0] != 'product_id' && $url[0] != 'probg_blog_category_id' && $url[0] != 'probg_blog_article_id') {]]></add>
-    </operation>
-    <operation error="skip">
-      <search><![CDATA[if (isset($data['route'])) {]]></search>
-      <add position="after"><![CDATA[
+    <operation error="skip"><search><![CDATA[if ($url[0] == 'manufacturer_id') {]]></search><add position="before"><![CDATA[
+                    if ($url[0] == 'probg_blog_category_id') { $this->request->get['probg_blog_category_id'] = $url[1]; }
+                    if ($url[0] == 'probg_blog_article_id') { $this->request->get['probg_blog_article_id'] = $url[1]; }
+    ]]></add></operation>
+    <operation error="skip"><search><![CDATA[if ($query->row['query'] && $url[0] != 'information_id' && $url[0] != 'manufacturer_id' && $url[0] != 'category_id' && $url[0] != 'product_id') {]]></search><add position="replace"><![CDATA[if ($query->row['query'] && $url[0] != 'information_id' && $url[0] != 'manufacturer_id' && $url[0] != 'category_id' && $url[0] != 'product_id' && $url[0] != 'probg_blog_category_id' && $url[0] != 'probg_blog_article_id') {]]></add></operation>
+    <operation error="skip"><search><![CDATA[if (isset($data['route'])) {]]></search><add position="after"><![CDATA[
                 if ($data['route'] == 'extension/module/probg_blog' && ($key == 'route' || $key == 'probg_blog_category_id' || $key == 'probg_blog_article_id')) {
                     $probg_blog_query = ($key == 'route') ? $value : $key . '=' . (int)$value;
                     $probg_blog_seo = $this->db->query("SELECT * FROM " . DB_PREFIX . "seo_url WHERE `query` = '" . $this->db->escape($probg_blog_query) . "' AND store_id = '" . (int)$this->config->get('config_store_id') . "' AND language_id = '" . (int)$this->config->get('config_language_id') . "'");
-                    if ($probg_blog_seo->num_rows && $probg_blog_seo->row['keyword']) {
-                        $url .= '/' . $probg_blog_seo->row['keyword'];
-                        unset($data[$key]);
-                    }
+                    if ($probg_blog_seo->num_rows && $probg_blog_seo->row['keyword']) { $url .= '/' . $probg_blog_seo->row['keyword']; unset($data[$key]); }
                 }
-      ]]></add>
-    </operation>
+    ]]></add></operation>
   </file>
 
-  <file path="catalog/controller/common/header.php">
+  <file path="catalog/model/design/layout.php">
     <operation error="skip">
-      <search><![CDATA[$data['name'] = $this->config->get('config_name');]]></search>
+      <search><![CDATA[public function getLayout($route) {]]></search>
       <add position="after"><![CDATA[
-        $data['probg_blog_social_meta'] = $this->config->get('probg_blog_social_meta');
+        if (isset($this->request->get['probg_blog_category_id']) || isset($this->request->get['probg_blog_article_id'])) {
+            $probg_blog_layout_table = $this->db->query("SHOW TABLES LIKE '" . $this->db->escape(DB_PREFIX . "probg_blog_category_to_layout") . "'");
+            if ($probg_blog_layout_table->num_rows && isset($this->request->get['probg_blog_category_id'])) {
+                $probg_blog_layout = $this->db->query("SELECT layout_id FROM " . DB_PREFIX . "probg_blog_category_to_layout WHERE category_id = '" . (int)$this->request->get['probg_blog_category_id'] . "' AND store_id = '" . (int)$this->config->get('config_store_id') . "'");
+                if ($probg_blog_layout->num_rows && (int)$probg_blog_layout->row['layout_id']) {
+                    return (int)$probg_blog_layout->row['layout_id'];
+                }
+            } elseif ($probg_blog_layout_table->num_rows && isset($this->request->get['probg_blog_article_id'])) {
+                $probg_blog_layout = $this->db->query("SELECT c2l.layout_id FROM " . DB_PREFIX . "probg_blog_article a INNER JOIN " . DB_PREFIX . "probg_blog_category_to_layout c2l ON(c2l.category_id = a.category_id) WHERE a.article_id = '" . (int)$this->request->get['probg_blog_article_id'] . "' AND c2l.store_id = '" . (int)$this->config->get('config_store_id') . "'");
+                if ($probg_blog_layout->num_rows && (int)$probg_blog_layout->row['layout_id']) {
+                    return (int)$probg_blog_layout->row['layout_id'];
+                }
+            }
+        }
       ]]></add>
     </operation>
   </file>
 
-  <file path="catalog/view/theme/*/template/common/header.twig">
-    <operation error="skip">
-      <search><![CDATA[</head>]]></search>
-      <add position="before"><![CDATA[
-{% if probg_blog_social_meta %}{{ probg_blog_social_meta }}{% endif %}
-      ]]></add>
-    </operation>
-  </file>
-
-  <file path="catalog/controller/extension/feed/google_sitemap.php">
-    <operation error="skip">
-      <search><![CDATA[$output .= '</urlset>';]]></search>
-      <add position="before"><![CDATA[
-            $output .= $this->load->controller('extension/feed/probg_blog_sitemap/googleSitemap');
-      ]]></add>
-    </operation>
-  </file>
+  <file path="catalog/controller/common/header.php"><operation error="skip"><search><![CDATA[$data['name'] = $this->config->get('config_name');]]></search><add position="after"><![CDATA[$data['probg_blog_social_meta'] = $this->config->get('probg_blog_social_meta');]]></add></operation></file>
+  <file path="catalog/view/theme/*/template/common/header.twig"><operation error="skip"><search><![CDATA[</head>]]></search><add position="before"><![CDATA[{% if probg_blog_social_meta %}{{ probg_blog_social_meta }}{% endif %}]]></add></operation></file>
+  <file path="catalog/controller/extension/feed/google_sitemap.php"><operation error="skip"><search><![CDATA[$output .= '</urlset>';]]></search><add position="before"><![CDATA[$output .= $this->load->controller('extension/feed/probg_blog_sitemap/googleSitemap');]]></add></operation></file>
 </modification>
