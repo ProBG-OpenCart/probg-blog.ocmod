@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.0.0] - 2026-08-15
+
+### beta
+
+- First consolidated beta release of ProBG Blog for OpenCart 3.
+- Includes multilingual categories and articles, SEO URLs, canonical redirects, Open Graph, Twitter Cards, JSON-LD, sitemap integration and caching.
+- Includes integrated Categories and Articles administration tabs.
+- Includes related products for articles using the standard OpenCart product autocomplete.
+- Includes the built-in configurable frontend blog menu without requiring a second module installation.
+- Release is published as a GitHub prerelease under tag `1.0.0-beta`.
+
+### changed
+
+- Package and internal module version updated to `1.0.0`.
+- Release status marked as **Beta**.
+
 ## [0.12.0] - 2026-08-14
 
 ### feat

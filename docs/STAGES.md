@@ -12,3 +12,4 @@
 - 0.10.0 — integrated Articles tab with list, add and edit screens in the shared administration navigation.
 - 0.11.0 — related products for articles with standard OpenCart autocomplete and storefront output.
 - 0.12.0 — built-in frontend blog menu inside the existing ProBG Blog installation and configurable layout output mode.
+- 1.0.0-beta — consolidated beta release with the complete blog feature set, related products and built-in frontend menu.
