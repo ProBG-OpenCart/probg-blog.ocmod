@@ -1,0 +1,114 @@
+name: ProBG Blog 1.0.0 Beta Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.event.head_commit.message == 'chore: trigger ProBG Blog 1.0.0 beta release'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prepare 1.0.0 Beta
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          sed -i 's/<version>0\.12\.0<\/version>/<version>1.0.0<\/version>/' install.xml
+          sed -i 's/0\.12\.0/1.0.0/g' upload/admin/controller/extension/module/probg_blog.php
+          sed -i 's/0\.11\.0/1.0.0/g' upload/admin/model/extension/module/probg_blog.php
+          sed -i 's/Версия 0\.12\.0/Версия 1.0.0 Beta/' upload/admin/language/bg-bg/extension/module/probg_blog.php
+          sed -i 's/Version 0\.12\.0/Version 1.0.0 Beta/' upload/admin/language/en-gb/extension/module/probg_blog.php
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          readme = Path('README.md')
+          text = readme.read_text(encoding='utf-8')
+          text = text.replace('- Версия: `0.12.0`', '- Версия: `1.0.0`\n- Статус: **Beta**', 1)
+          text = text.replace('## Обновяване до 0.12.0', '## Обновяване до 1.0.0 Beta', 1)
+          readme.write_text(text, encoding='utf-8')
+
+          changelog = Path('CHANGELOG.md')
+          text = changelog.read_text(encoding='utf-8')
+          entry = '''# Changelog\n\n## [1.0.0] - 2026-08-15\n\n### beta\n\n- First consolidated beta release of ProBG Blog for OpenCart 3.\n- Includes multilingual categories and articles, SEO URLs, canonical redirects, Open Graph, Twitter Cards, JSON-LD, sitemap integration and caching.\n- Includes integrated Categories and Articles administration tabs.\n- Includes related products for articles using the standard OpenCart product autocomplete.\n- Includes the built-in configurable frontend blog menu without requiring a second module installation.\n- Release is published as a GitHub prerelease under tag `1.0.0-beta`.\n\n### changed\n\n- Package and internal module version updated to `1.0.0`.\n- Release status marked as **Beta**.\n\n'''
+          if text.startswith('# Changelog\n'):
+              text = entry + text[len('# Changelog\n\n'):]
+          else:
+              text = entry + text
+          changelog.write_text(text, encoding='utf-8')
+
+          stages = Path('docs/STAGES.md')
+          text = stages.read_text(encoding='utf-8')
+          line = '- 1.0.0-beta — consolidated beta release with the complete blog feature set, related products and built-in frontend menu.\n'
+          if line not in text:
+              if not text.endswith('\n'):
+                  text += '\n'
+              text += line
+          stages.write_text(text, encoding='utf-8')
+          PY
+
+          git config user.name 'Veselin Totev'
+          git config user.email 'v.totev@probg.com'
+          git add install.xml README.md CHANGELOG.md docs/STAGES.md \
+            upload/admin/controller/extension/module/probg_blog.php \
+            upload/admin/model/extension/module/probg_blog.php \
+            upload/admin/language/bg-bg/extension/module/probg_blog.php \
+            upload/admin/language/en-gb/extension/module/probg_blog.php
+          git commit -m 'release: ProBG Blog 1.0.0 beta'
+          git push origin HEAD:main
+
+          git tag -a '1.0.0-beta' -m 'ProBG Blog 1.0.0 Beta'
+          git push origin '1.0.0-beta'
+
+      - name: Build OCMOD package
+        shell: bash
+        run: |
+          set -euo pipefail
+          zip -rq probg_blog_v1.0.0_beta.ocmod.zip install.xml upload
+
+      - name: Create GitHub prerelease
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          cat > release-notes.md <<'EOF'
+          ## ProBG Blog 1.0.0 Beta
+
+          First consolidated beta release of ProBG Blog for OpenCart 3.
+
+          ### Highlights
+          - Multilingual blog categories and articles
+          - Automatic SEO URL generation, canonical URLs and redirects
+          - Open Graph, Twitter Cards and JSON-LD
+          - XML sitemap and OpenCart Google Sitemap integration
+          - Catalog caching
+          - Integrated Categories and Articles administration tabs
+          - Related products on articles using standard OpenCart autocomplete
+          - Built-in configurable frontend blog menu with no second module installation
+          - Multi-store category and layout support
+
+          ### Compatibility
+          - OpenCart 3.0.2.x
+          - OpenCart 3.0.3.x
+
+          This release is marked as **Beta** and should be validated on a staging store before production rollout.
+          EOF
+
+          gh release create '1.0.0-beta' \
+            probg_blog_v1.0.0_beta.ocmod.zip \
+            --repo "${{ github.repository }}" \
+            --title 'ProBG Blog 1.0.0 Beta' \
+            --prerelease \
+            --notes-file release-notes.md
