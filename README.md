@@ -1,5 +1,7 @@
 # ProBG Blog for OpenCart 3
 
+[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-Revolut-191C1F?logo=revolut&logoColor=white)](https://revolut.me/vtotev)
+
 `ProBG Blog` е самостоятелен многоезичен блог модул за OpenCart 3 с категории, статии, SEO URL, Open Graph, JSON-LD, sitemap, кеширане, свързани продукти и вградено frontend меню.
 
 ## Версия и съвместимост
