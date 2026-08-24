@@ -2,7 +2,7 @@
 <modification>
   <name>ProBG Blog</name>
   <code>probg_blog</code>
-  <version>1.1.1</version>
+  <version>1.2.0</version>
   <author>ProBG</author>
   <link>https://probg.com/</link>
 
@@ -30,11 +30,11 @@
   <file path="admin/controller/extension/module/probg_blog.php">
     <operation error="skip">
       <search><![CDATA[$data['stage'] = '17';]]></search>
-      <add position="replace"><![CDATA[$data['stage'] = '20';]]></add>
+      <add position="replace"><![CDATA[$data['stage'] = '21';]]></add>
     </operation>
     <operation error="skip">
       <search><![CDATA[$data['version'] = '1.0.5';]]></search>
-      <add position="replace"><![CDATA[$data['version'] = '1.1.1';]]></add>
+      <add position="replace"><![CDATA[$data['version'] = '1.2.0';]]></add>
     </operation>
   </file>
 
@@ -123,6 +123,15 @@
       <search><![CDATA[$data['text_related'] = $this->language->get('text_related');]]></search>
       <add position="after"><![CDATA[
         $data['text_gallery'] = $this->language->get('text_gallery');
+      ]]></add>
+    </operation>
+    <operation error="skip">
+      <search><![CDATA[$data['images'] = array();]]></search>
+      <add position="before"><![CDATA[
+        // ProBG Blog article gallery lightbox. Magnific Popup is bundled with OpenCart 3.
+        $this->document->addStyle('catalog/view/javascript/jquery/magnific/magnific-popup.css');
+        $this->document->addStyle('catalog/view/theme/default/stylesheet/probg_blog_lightbox.css');
+        $this->document->addScript('catalog/view/javascript/jquery/magnific/jquery.magnific-popup.min.js');
       ]]></add>
     </operation>
     <operation error="skip">
