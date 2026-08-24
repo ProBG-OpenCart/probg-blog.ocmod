@@ -2,7 +2,7 @@
 <modification>
   <name>ProBG Blog</name>
   <code>probg_blog</code>
-  <version>1.0.6</version>
+  <version>1.1.0</version>
   <author>ProBG</author>
   <link>https://probg.com/</link>
 
@@ -30,11 +30,11 @@
   <file path="admin/controller/extension/module/probg_blog.php">
     <operation error="skip">
       <search><![CDATA[$data['stage'] = '17';]]></search>
-      <add position="replace"><![CDATA[$data['stage'] = '18';]]></add>
+      <add position="replace"><![CDATA[$data['stage'] = '19';]]></add>
     </operation>
     <operation error="skip">
       <search><![CDATA[$data['version'] = '1.0.5';]]></search>
-      <add position="replace"><![CDATA[$data['version'] = '1.0.6';]]></add>
+      <add position="replace"><![CDATA[$data['version'] = '1.1.0';]]></add>
     </operation>
   </file>
 
@@ -81,6 +81,28 @@
   </file>
 
   <file path="catalog/controller/extension/module/probg_blog.php">
+    <operation error="skip">
+      <search><![CDATA[if (!$this->config->get('module_probg_blog_status')) return '';]]></search>
+      <add position="after"><![CDATA[
+        $this->document->addStyle('catalog/view/theme/default/stylesheet/probg_blog.css');
+      ]]></add>
+    </operation>
+    <operation error="skip">
+      <search><![CDATA[$data['category'] = array('title'=>$article['category_title'],'href'=>$this->url->link('extension/module/probg_blog','probg_blog_category_id='.(int)$article['category_id'],true));]]></search>
+      <add position="replace"><![CDATA[
+        $data['category'] = array(
+            'title' => $article['category_title'],
+            'text' => $article['category_title'],
+            'href' => $this->url->link('extension/module/probg_blog', 'probg_blog_category_id=' . (int)$article['category_id'], true)
+        );
+      ]]></add>
+    </operation>
+    <operation error="skip">
+      <search><![CDATA[$data['text_related'] = $this->language->get('text_related');]]></search>
+      <add position="after"><![CDATA[
+        $data['text_gallery'] = $this->language->get('text_gallery');
+      ]]></add>
+    </operation>
     <operation error="skip">
       <search><![CDATA[$this->config->set('probg_blog_social_meta',$meta);]]></search>
       <add position="before"><![CDATA[
