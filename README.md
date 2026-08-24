@@ -4,6 +4,20 @@
 
 `ProBG Blog` е самостоятелен многоезичен блог модул за OpenCart 3 с категории, статии, SEO URL, Open Graph, JSON-LD, sitemap, кеширане, свързани продукти и вградено frontend меню.
 
+## Промени във версия 1.0.3
+
+- Добавено е липсващото OpenCart parent permission право `extension/probg_blog`.
+- Това е route-ът, който OpenCart 3 реално проверява при отваряне на `extension/probg_blog/category` и `extension/probg_blog/article`.
+- Запазени са отделните `modify` права за CRUD операциите на категории и статии.
+- Не се модифицира глобалната OpenCart permission логика.
+
+## Changes in version 1.0.3
+
+- Added the missing OpenCart parent permission `extension/probg_blog`.
+- This is the route OpenCart 3 actually checks when opening `extension/probg_blog/category` and `extension/probg_blog/article`.
+- Existing dedicated `modify` permissions for category/article CRUD operations are preserved.
+- The global OpenCart permission logic is not modified.
+
 ## Промени във версия 1.0.1
 
 - Премахнати са старите отделни OpenCart layout модули **ProBG Blog — Статии** и **ProBG Blog — Категории**.
@@ -26,7 +40,7 @@
 
 ## Версия и съвместимост
 
-- Версия: `1.0.1`
+- Версия: `1.0.3`
 - Статус: **Beta**
 - Целева съвместимост: OpenCart `3.0.2.x` и `3.0.3.x`
 - PHP: код, съвместим с типичните PHP 7.x среди за OpenCart 3

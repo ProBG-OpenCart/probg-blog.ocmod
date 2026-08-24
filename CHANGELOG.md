@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.3] - 2026-08-24
+
+### fix — Български
+
+- Коригиран е проблемът **„Разрешението е отказано“** за табовете **Категории** и **Статии**.
+- Причината е OpenCart 3 startup permission логиката: routes `extension/probg_blog/category` и `extension/probg_blog/article` се проверяват като родителски route `extension/probg_blog`.
+- Инсталацията и upgrade логиката вече добавят `access` и `modify` право и за `extension/probg_blog`, освен съществуващите права за основния модул и CRUD routes.
+- Не се променя core permission контролерът и не се използва глобален permission bypass.
+- Версията е обновена до `1.0.3`.
+
+### fix — English
+
+- Fixed **Permission Denied** for the **Categories** and **Articles** tabs.
+- Root cause: OpenCart 3 startup permission logic checks `extension/probg_blog/category` and `extension/probg_blog/article` as the parent route `extension/probg_blog`.
+- Install and upgrade permission provisioning now grants `access` and `modify` for `extension/probg_blog` in addition to the existing main-module and CRUD permissions.
+- No core permission controller modification or global permission bypass is used.
+- Updated the version to `1.0.3`.
+
 ## [1.0.2] - 2026-08-24
 
 ### fix — Български
