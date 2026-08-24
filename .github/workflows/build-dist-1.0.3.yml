@@ -1,0 +1,58 @@
+name: Build ProBG Blog 1.0.3 dist
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  build-dist:
+    if: github.head_ref == 'chore/build-dist-1.0.3-trigger'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Validate source
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r '$x=simplexml_load_file("install.xml"); if (!$x || (string)$x->version !== "1.0.3") { fwrite(STDERR, "Expected install.xml version 1.0.3\n"); exit(1); }'
+          find upload -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null
+
+      - name: Build OCMOD package
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f dist/probg-blog-1.0.3.ocmod.zip
+          zip -rq dist/probg-blog-1.0.3.ocmod.zip install.xml upload
+          unzip -t dist/probg-blog-1.0.3.ocmod.zip >/dev/null
+          test "$(unzip -Z1 dist/probg-blog-1.0.3.ocmod.zip | head -n1)" = "install.xml"
+          unzip -Z1 dist/probg-blog-1.0.3.ocmod.zip | grep -q '^upload/'
+          (cd dist && sha256sum probg-blog-*.ocmod.zip > SHA256SUMS)
+
+      - name: Commit distribution package
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Veselin Totev'
+          git config user.email 'v.totev@probg.com'
+          git add dist/probg-blog-1.0.3.ocmod.zip dist/SHA256SUMS
+          git commit -m 'build: add ProBG Blog 1.0.3 installation package'
+          git push origin HEAD:main
+
+      - name: Remove one-off workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git pull --ff-only origin main
+          git rm .github/workflows/build-dist-1.0.3.yml
+          git commit -m 'chore: remove one-off 1.0.3 dist workflow'
+          git push origin HEAD:main
