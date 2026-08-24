@@ -2,7 +2,7 @@
 <modification>
   <name>ProBG Blog</name>
   <code>probg_blog</code>
-  <version>1.0.5</version>
+  <version>1.0.6</version>
   <author>ProBG</author>
   <link>https://probg.com/</link>
 
@@ -24,6 +24,17 @@
         }
         if ($probg_blog) $data['menus'][] = array('id' => 'menu-probg-blog', 'icon' => 'fa-newspaper-o', 'name' => $this->language->get('text_menu_blog'), 'href' => '', 'children' => $probg_blog);
       ]]></add>
+    </operation>
+  </file>
+
+  <file path="admin/controller/extension/module/probg_blog.php">
+    <operation error="skip">
+      <search><![CDATA[$data['stage'] = '17';]]></search>
+      <add position="replace"><![CDATA[$data['stage'] = '18';]]></add>
+    </operation>
+    <operation error="skip">
+      <search><![CDATA[$data['version'] = '1.0.5';]]></search>
+      <add position="replace"><![CDATA[$data['version'] = '1.0.6';]]></add>
     </operation>
   </file>
 
@@ -69,7 +80,24 @@
     </operation>
   </file>
 
-  <file path="catalog/controller/common/header.php"><operation error="skip"><search><![CDATA[$data['name'] = $this->config->get('config_name');]]></search><add position="after"><![CDATA[$data['probg_blog_social_meta'] = $this->config->get('probg_blog_social_meta');]]></add></operation></file>
+  <file path="catalog/controller/extension/module/probg_blog.php">
+    <operation error="skip">
+      <search><![CDATA[$this->config->set('probg_blog_social_meta',$meta);]]></search>
+      <add position="before"><![CDATA[
+        $meta = str_replace(array('\n', '\"'), array("\n", '"'), $meta);
+      ]]></add>
+    </operation>
+  </file>
+
+  <file path="catalog/controller/common/header.php">
+    <operation error="skip">
+      <search><![CDATA[$data['name'] = $this->config->get('config_name');]]></search>
+      <add position="after"><![CDATA[
+        $probg_blog_social_meta = (string)$this->config->get('probg_blog_social_meta');
+        $data['probg_blog_social_meta'] = str_replace(array('\n', '\"'), array("\n", '"'), $probg_blog_social_meta);
+      ]]></add>
+    </operation>
+  </file>
   <file path="catalog/view/theme/*/template/common/header.twig"><operation error="skip"><search><![CDATA[</head>]]></search><add position="before"><![CDATA[{% if probg_blog_social_meta %}{{ probg_blog_social_meta }}{% endif %}]]></add></operation></file>
   <file path="catalog/controller/extension/feed/google_sitemap.php"><operation error="skip"><search><![CDATA[$output .= '</urlset>';]]></search><add position="before"><![CDATA[$output .= $this->load->controller('extension/feed/probg_blog_sitemap/googleSitemap');]]></add></operation></file>
 </modification>

@@ -18,3 +18,4 @@
 - 1.0.3 — fixed the missing OpenCart parent permission `extension/probg_blog` required for integrated Categories/Articles routes.
 - 1.0.4 — fixed legacy layout cleanup for standard OpenCart 3 `layout_module.code` and made interrupted migrations safe to rerun.
 - 1.0.5 — fixed storefront SEO rewrite route handling and preserved hierarchical blog URLs.
+- 1.0.6 — normalized storefront Open Graph/Twitter metadata so literal `\n` and escaped quotes are no longer rendered above the page; added defensive normalization before config storage and header output.
