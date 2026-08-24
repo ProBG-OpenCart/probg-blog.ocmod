@@ -41,11 +41,16 @@
         {% if images %}
           <section class="probg-blog-gallery-section mb-5">
             <h2 class="h4 mb-3">{{ text_gallery }}</h2>
-            <div class="row g-3 probg-blog-gallery">
+            <div class="row g-3 probg-blog-gallery" data-probg-blog-gallery>
               {% for image in images %}
                 <div class="col-6 col-sm-6 col-md-4">
-                  <a href="{{ image.popup }}" class="card border-0 shadow-sm overflow-hidden h-100 probg-blog-gallery-link">
-                    <img src="{{ image.thumb }}" alt="{{ heading_title }}" class="img-fluid w-100">
+                  <a href="{{ image.popup }}"
+                     class="card border-0 shadow-sm overflow-hidden h-100 probg-blog-gallery-link"
+                     data-probg-blog-lightbox
+                     data-title="{{ heading_title }} — {{ loop.index }} / {{ images|length }}"
+                     aria-label="{{ text_gallery }}: {{ heading_title }} — {{ loop.index }} / {{ images|length }}">
+                    <img src="{{ image.thumb }}" alt="{{ heading_title }} — {{ loop.index }}" class="img-fluid w-100">
+                    <span class="probg-blog-gallery-zoom" aria-hidden="true"><i class="fa fa-search-plus"></i></span>
                   </a>
                 </div>
               {% endfor %}
@@ -84,7 +89,37 @@
     </main>{{ column_right }}
   </div>
 </div>
-{% if images %}<script type="text/javascript"><!--
-$('.probg-blog-gallery').magnificPopup({type:'image',delegate:'a',gallery:{enabled:true}});
-//--></script>{% endif %}
+{% if images %}
+<script type="text/javascript"><!--
+$(function() {
+  var $gallery = $('[data-probg-blog-gallery]');
+
+  if (!$gallery.length || !$.fn.magnificPopup) {
+    return;
+  }
+
+  $gallery.magnificPopup({
+    type: 'image',
+    delegate: 'a[data-probg-blog-lightbox]',
+    closeOnContentClick: false,
+    closeBtnInside: true,
+    fixedContentPos: true,
+    removalDelay: 180,
+    mainClass: 'mfp-fade probg-blog-lightbox',
+    gallery: {
+      enabled: true,
+      navigateByImgClick: true,
+      preload: [0, 2],
+      tCounter: '%curr% / %total%'
+    },
+    image: {
+      verticalFit: true,
+      titleSrc: function(item) {
+        return item.el.attr('data-title') || '';
+      }
+    }
+  });
+});
+//--></script>
+{% endif %}
 {{ footer }}
