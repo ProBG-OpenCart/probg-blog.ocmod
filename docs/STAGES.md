@@ -19,3 +19,4 @@
 - 1.0.4 — fixed legacy layout cleanup for standard OpenCart 3 `layout_module.code` and made interrupted migrations safe to rerun.
 - 1.0.5 — fixed storefront SEO rewrite route handling and preserved hierarchical blog URLs.
 - 1.0.6 — normalized storefront Open Graph/Twitter metadata so literal `\n` and escaped quotes are no longer rendered above the page; added defensive normalization before config storage and header output.
+- 1.1.0 — redesigned all storefront blog templates with Bootstrap 5 components, added scoped Bootstrap 5-compatible styles/fallbacks, and fixed the missing category breadcrumb link on article pages.
