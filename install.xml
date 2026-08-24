@@ -27,6 +27,17 @@
     </operation>
   </file>
 
+  <file path="admin/controller/extension/module/probg_blog.php">
+    <operation error="skip">
+      <search><![CDATA[$data['stage'] = '17';]]></search>
+      <add position="replace"><![CDATA[$data['stage'] = '18';]]></add>
+    </operation>
+    <operation error="skip">
+      <search><![CDATA[$data['version'] = '1.0.5';]]></search>
+      <add position="replace"><![CDATA[$data['version'] = '1.0.6';]]></add>
+    </operation>
+  </file>
+
   <file path="catalog/controller/startup/seo_url.php">
     <operation error="skip"><search><![CDATA[if ($url[0] == 'manufacturer_id') {]]></search><add position="before"><![CDATA[
                     if ($url[0] == 'probg_blog_category_id') { $this->request->get['probg_blog_category_id'] = $url[1]; }
