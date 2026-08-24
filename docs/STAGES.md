@@ -16,3 +16,4 @@
 - 1.0.1 — single-module architecture cleanup: removed legacy Articles/Categories layout extensions and added safe upgrade cleanup.
 - 1.0.2 — fixed upgrade permissions for integrated Categories/Articles routes and normalized the administration overview styling.
 - 1.0.3 — fixed the missing OpenCart parent permission `extension/probg_blog` required for integrated Categories/Articles routes.
+- 1.0.4 — fixed legacy layout cleanup for standard OpenCart 3 `layout_module.code` and made interrupted migrations safe to rerun.
