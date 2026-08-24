@@ -17,3 +17,4 @@
 - 1.0.2 — fixed upgrade permissions for integrated Categories/Articles routes and normalized the administration overview styling.
 - 1.0.3 — fixed the missing OpenCart parent permission `extension/probg_blog` required for integrated Categories/Articles routes.
 - 1.0.4 — fixed legacy layout cleanup for standard OpenCart 3 `layout_module.code` and made interrupted migrations safe to rerun.
+- 1.0.5 — fixed storefront SEO rewrite route handling and preserved hierarchical blog URLs.
