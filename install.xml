@@ -98,6 +98,12 @@
       ]]></add>
     </operation>
     <operation error="skip">
+      <search><![CDATA[$data['text_related'] = $this->language->get('text_related');]]></search>
+      <add position="after"><![CDATA[
+        $data['text_gallery'] = $this->language->get('text_gallery');
+      ]]></add>
+    </operation>
+    <operation error="skip">
       <search><![CDATA[$this->config->set('probg_blog_social_meta',$meta);]]></search>
       <add position="before"><![CDATA[
         $meta = str_replace(array('\n', '\"'), array("\n", '"'), $meta);
