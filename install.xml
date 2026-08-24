@@ -2,7 +2,7 @@
 <modification>
   <name>ProBG Blog</name>
   <code>probg_blog</code>
-  <version>1.0.4</version>
+  <version>1.0.5</version>
   <author>ProBG</author>
   <link>https://probg.com/</link>
 
@@ -34,10 +34,15 @@
     ]]></add></operation>
     <operation error="skip"><search><![CDATA[if ($query->row['query'] && $url[0] != 'information_id' && $url[0] != 'manufacturer_id' && $url[0] != 'category_id' && $url[0] != 'product_id') {]]></search><add position="replace"><![CDATA[if ($query->row['query'] && $url[0] != 'information_id' && $url[0] != 'manufacturer_id' && $url[0] != 'category_id' && $url[0] != 'product_id' && $url[0] != 'probg_blog_category_id' && $url[0] != 'probg_blog_article_id') {]]></add></operation>
     <operation error="skip"><search><![CDATA[if (isset($data['route'])) {]]></search><add position="after"><![CDATA[
-                if ($data['route'] == 'extension/module/probg_blog' && ($key == 'route' || $key == 'probg_blog_category_id' || $key == 'probg_blog_article_id')) {
+                if (isset($data['route']) && $data['route'] == 'extension/module/probg_blog' && ($key == 'route' || $key == 'probg_blog_category_id' || $key == 'probg_blog_article_id')) {
                     $probg_blog_query = ($key == 'route') ? $value : $key . '=' . (int)$value;
                     $probg_blog_seo = $this->db->query("SELECT * FROM " . DB_PREFIX . "seo_url WHERE `query` = '" . $this->db->escape($probg_blog_query) . "' AND store_id = '" . (int)$this->config->get('config_store_id') . "' AND language_id = '" . (int)$this->config->get('config_language_id') . "'");
-                    if ($probg_blog_seo->num_rows && $probg_blog_seo->row['keyword']) { $url .= '/' . $probg_blog_seo->row['keyword']; unset($data[$key]); }
+                    if ($probg_blog_seo->num_rows && $probg_blog_seo->row['keyword']) {
+                        $url .= '/' . $probg_blog_seo->row['keyword'];
+                        if ($key != 'route') {
+                            unset($data[$key]);
+                        }
+                    }
                 }
     ]]></add></operation>
   </file>

@@ -17,7 +17,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             $this->grantPermissions();
         }
 
-        if ($this->config->get('module_probg_blog_version') !== '1.0.4') {
+        if ($this->config->get('module_probg_blog_version') !== '1.0.5') {
             $this->model_extension_module_probg_blog->migrate();
             $settings = $this->model_setting_setting->getSetting('module_probg_blog');
             if (!isset($settings['module_probg_blog_layout_output'])) $settings['module_probg_blog_layout_output'] = 'articles';
@@ -28,7 +28,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             if (!isset($settings['module_probg_blog_menu_category_id'])) $settings['module_probg_blog_menu_category_id'] = 0;
             if (!isset($settings['module_probg_blog_menu_limit'])) $settings['module_probg_blog_menu_limit'] = 10;
             if (!isset($settings['module_probg_blog_menu_sort'])) $settings['module_probg_blog_menu_sort'] = 'date';
-            $settings['module_probg_blog_version'] = '1.0.4';
+            $settings['module_probg_blog_version'] = '1.0.5';
             $this->model_setting_setting->editSetting('module_probg_blog', $settings);
         }
 
@@ -44,7 +44,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
                 unset($description);
             }
 
-            $post['module_probg_blog_version'] = '1.0.4';
+            $post['module_probg_blog_version'] = '1.0.5';
             $this->model_setting_setting->editSetting('module_probg_blog', $post);
             $this->model_extension_module_probg_blog->saveSectionSeo(isset($post['module_probg_blog_description']) ? $post['module_probg_blog_description'] : array());
             $this->session->data['success'] = $this->language->get('text_success');
@@ -92,8 +92,8 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $data['articles_url'] = $this->url->link('extension/probg_blog/article', 'user_token=' . $this->session->data['user_token'], true);
         $data['total_categories'] = $this->model_extension_probg_blog_category->getTotalCategories();
         $data['total_articles'] = $this->model_extension_probg_blog_article->getTotalArticles();
-        $data['stage'] = '16';
-        $data['version'] = '1.0.4';
+        $data['stage'] = '17';
+        $data['version'] = '1.0.5';
 
         $this->load->model('localisation/language');
         $data['languages'] = $this->model_localisation_language->getLanguages();
@@ -193,7 +193,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $settings['module_probg_blog_menu_category_id'] = 0;
         $settings['module_probg_blog_menu_limit'] = 10;
         $settings['module_probg_blog_menu_sort'] = 'date';
-        $settings['module_probg_blog_version'] = '1.0.4';
+        $settings['module_probg_blog_version'] = '1.0.5';
         $this->model_setting_setting->editSetting('module_probg_blog', $settings);
         $this->grantPermissions();
     }
