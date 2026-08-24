@@ -1,0 +1,41 @@
+name: ProBG Blog 1.0.1 README Badge
+
+on:
+  push:
+    branches:
+      - fix/1.0.1-single-module-cleanup
+
+permissions:
+  contents: write
+
+jobs:
+  docs:
+    if: "${{ github.event.head_commit.message == 'chore: restore Revolut README badge' }}"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Restore support badge
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('README.md')
+          text = p.read_text(encoding='utf-8')
+          badge = '[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-Revolut-191C1F?logo=revolut&logoColor=white)](https://revolut.me/vtotev)'
+          if badge not in text:
+              title = '# ProBG Blog for OpenCart 3\n'
+              if not text.startswith(title):
+                  raise SystemExit('README title marker not found')
+              text = text.replace(title, title + '\n' + badge + '\n', 1)
+          p.write_text(text, encoding='utf-8')
+          PY
+          git rm .github/workflows/probg-blog-1.0.1-readme-badge.yml
+          git config user.name 'Veselin Totev'
+          git config user.email 'v.totev@probg.com'
+          git add -A
+          git commit -m 'docs: restore Revolut support badge'
+          git push origin HEAD:fix/1.0.1-single-module-cleanup
