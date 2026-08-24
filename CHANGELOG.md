@@ -1,5 +1,77 @@
 # Changelog
 
+## [1.1.1] - 2026-08-24
+
+### fix — Български
+
+- Коригирано е рекурсивното зареждане на ProBG Blog при добавяне на модула в **Design → Layouts**, включително на началната страница.
+- OpenCart 3 може да извика неинстанциран модул без `$setting`; досегашната логика погрешно стартираше пълния blog `listing()` renderer.
+- Layout извикванията вече се разпознават по текущия OpenCart route и показват само избрания output: **Меню** или **Последни статии**.
+- Добавена е request-level защита `probg_blog_page_rendering`, която предотвратява рекурсия и когато модулът е поставен в layout, използван от самата блог секция.
+- OCMOD версията е обновена до `1.1.1`, а административният етап до Stage 20.
+
+### fix — English
+
+- Fixed recursive ProBG Blog rendering when the module is assigned in **Design → Layouts**, including the home page.
+- OpenCart 3 can invoke a non-instance module without a `$setting` array; the previous logic incorrectly started the full blog `listing()` renderer.
+- Layout calls are now identified by the current OpenCart route and render only the selected output: **Menu** or **Latest Articles**.
+- Added a request-level `probg_blog_page_rendering` guard to prevent recursion when the module is assigned to a layout used by the blog section itself.
+- Updated the OCMOD version to `1.1.1` and administration stage to Stage 20.
+
+## [1.1.0] - 2026-08-24
+
+### feat — Български
+
+- Преработени са storefront шаблоните на блога с Bootstrap 5 компоненти.
+- Обновени са основната блог страница, категорията, статията, блокът с последни статии и вграденото блог меню.
+- Галерията и свързаните продукти използват responsive Bootstrap 5 card/grid структура.
+- Добавен е scoped `probg_blog.css` с fallback стилове за OpenCart 3 теми, които все още използват Bootstrap 3.
+- Добавено е локализирано заглавие **Галерия / Gallery**.
+
+### fix — Български
+
+- Коригиран е липсващият линк към категорията в breadcrumb навигацията на статия.
+- Breadcrumb структурата вече е **Начало → Блог → Категория → Статия**.
+
+### feat — English
+
+- Redesigned the blog storefront templates using Bootstrap 5 components.
+- Updated the blog index, category, article, latest-articles block and built-in blog menu.
+- Gallery and related products now use responsive Bootstrap 5 card/grid layouts.
+- Added scoped `probg_blog.css` fallbacks for OpenCart 3 themes that still load Bootstrap 3.
+- Added localized **Gallery** text.
+
+### fix — English
+
+- Fixed the missing category link in article breadcrumb navigation.
+- Breadcrumb hierarchy is now **Home → Blog → Category → Article**.
+
+## [1.0.6] - 2026-08-24
+
+### fix — Български
+
+- Коригирано е показването на буквални `\n` и escaped кавички над storefront съдържанието.
+- Social meta стойностите се нормализират преди запис в config и отново преди подаване към header Twig.
+- Запазени са Open Graph, Twitter Cards и JSON-LD метаданните.
+
+### fix — English
+
+- Fixed literal `\n` and escaped quotes being rendered above storefront content.
+- Social metadata is normalized before config storage and again before it is passed to the header Twig.
+- Open Graph, Twitter Cards and JSON-LD metadata remain enabled.
+
+## [1.0.5] - 2026-08-24
+
+### fix — Български
+
+- Коригирана е storefront SEO rewrite логиката, която премахваше `route` твърде рано и причиняваше `Undefined index: route` в `startup/seo_url.php`.
+- Запазена е йерархичната URL структура `/blog/category/article`.
+
+### fix — English
+
+- Fixed storefront SEO rewrite logic that removed `route` too early and caused `Undefined index: route` in `startup/seo_url.php`.
+- Preserved the hierarchical `/blog/category/article` URL structure.
+
 ## [1.0.4] - 2026-08-24
 
 ### fix — Български
