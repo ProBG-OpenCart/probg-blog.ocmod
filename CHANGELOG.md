@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.2] - 2026-08-24
+
+### fix — Български
+
+- Коригиран е проблемът **„Разрешението е отказано“** при отваряне на табовете **Категории** и **Статии** след обновяване на вече инсталиран модул.
+- При отваряне на **ProBG Blog → Настройки** потребителска група, която вече има `modify` право за `extension/module/probg_blog`, автоматично получава `access` и `modify` права за `extension/probg_blog/category` и `extension/probg_blog/article`.
+- Правата не се разширяват за групи, които нямат право да променят основния ProBG Blog модул.
+- Добавен е отделен admin stylesheet за коректно визуализиране на обзорните блокове Категории/Статии при admin теми, в които OpenCart `.tile` стиловете дават бял текст и икони върху бял фон.
+- Версията на OCMOD и административната версия са обновени до `1.0.2`.
+
+### fix — English
+
+- Fixed **Permission Denied** when opening the integrated **Categories** and **Articles** tabs after upgrading an existing installation.
+- When **ProBG Blog → Settings** is opened, a user group that already has `modify` permission for `extension/module/probg_blog` automatically receives `access` and `modify` permissions for `extension/probg_blog/category` and `extension/probg_blog/article`.
+- Permissions are not expanded for groups that cannot modify the main ProBG Blog module.
+- Added a dedicated admin stylesheet so the Categories/Articles overview renders correctly in admin themes where OpenCart `.tile` styles produce white text/icons on a white background.
+- Updated the OCMOD and administration version to `1.0.2`.
+
 ## [1.0.1] - 2026-08-24
 
 ### fix — Български

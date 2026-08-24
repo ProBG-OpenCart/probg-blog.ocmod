@@ -1,0 +1,55 @@
+#content .tile {
+  min-height: 0;
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  background: #fff;
+  color: #333;
+  box-shadow: none;
+}
+
+#content .tile .tile-heading {
+  padding: 10px 15px;
+  border-bottom: 1px solid #ddd;
+  background: #f5f5f5;
+  color: #333;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#content .tile .tile-body {
+  min-height: 72px;
+  padding: 15px;
+  background: #fff;
+  color: #333;
+}
+
+#content .tile .tile-body i {
+  color: #777;
+  font-size: 36px;
+  line-height: 42px;
+}
+
+#content .tile .tile-body h2 {
+  margin: 3px 0 0;
+  color: #333;
+  font-size: 30px;
+  line-height: 42px;
+}
+
+#content .tile .tile-footer {
+  padding: 9px 15px;
+  border-top: 1px solid #ddd;
+  background: #fafafa;
+}
+
+#content .tile .tile-footer a {
+  color: #337ab7;
+  font-weight: 600;
+}
+
+#content .tile .tile-footer a:hover,
+#content .tile .tile-footer a:focus {
+  color: #23527c;
+  text-decoration: none;
+}
