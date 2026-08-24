@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.0.1] - 2026-08-24
+
+### fix — Български
+
+- Премахнати са legacy отделните layout модули `probg_blog_articles` и `probg_blog_categories`.
+- Премахнати са техните admin/catalog controllers, language файлове и Twig шаблони.
+- Основният install route вече добавя permissions само за `extension/module/probg_blog`, `extension/probg_blog/category` и `extension/probg_blog/article`.
+- Добавена е upgrade миграция, която почиства старите `module` и `layout_module` записи за премахнатите модули.
+- Версията на OCMOD пакета и вътрешната версия са обновени до `1.0.1`.
+- Запазва се една инсталация **ProBG Blog**, без промяна или загуба на блог съдържание.
+
+### fix — English
+
+- Removed the legacy standalone `probg_blog_articles` and `probg_blog_categories` layout modules.
+- Removed their admin/catalog controllers, language files and Twig templates.
+- The main install route now grants permissions only for `extension/module/probg_blog`, `extension/probg_blog/category` and `extension/probg_blog/article`.
+- Added an upgrade migration that removes stale `module` and `layout_module` rows for the deleted modules.
+- Updated the OCMOD package and internal module version to `1.0.1`.
+- Keeps a single **ProBG Blog** installation without changing or deleting existing blog content.
+
 ## [1.0.0] - 2026-08-15
 
 ### beta
