@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.0.4] - 2026-08-24
+
+### fix — Български
+
+- Коригирана е фаталната SQL грешка `Unknown column 'module' in 'WHERE'` при migration cleanup-а.
+- Стандартната OpenCart 3 таблица `layout_module` използва колоната `code`, а не `module`.
+- Cleanup логиката вече открива наличната колона чрез `SHOW COLUMNS`, използва `code` при стандартен OpenCart 3 и запазва безопасен fallback за forks.
+- Премахнат е грешният early return при вътрешна версия `1.0.1`, така че migration-ът е идемпотентен и може безопасно да се изпълни повторно след прекъснат upgrade.
+- Вътрешната model версия е синхронизирана с `1.0.4`.
+
+### fix — English
+
+- Fixed the fatal migration SQL error `Unknown column 'module' in 'WHERE'`.
+- Standard OpenCart 3 uses the `code` column in the `layout_module` table, not `module`.
+- Cleanup now detects the available column with `SHOW COLUMNS`, uses `code` on standard OpenCart 3, and keeps a safe fallback for forks.
+- Removed the incorrect early return for internal version `1.0.1`, making migrations idempotent and safe to rerun after an interrupted upgrade.
+- Synchronized the internal model version with `1.0.4`.
+
 ## [1.0.3] - 2026-08-24
 
 ### fix — Български

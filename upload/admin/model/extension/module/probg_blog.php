@@ -12,7 +12,7 @@ class ModelExtensionModuleProbgBlog extends Model {
         $this->ensureArticleRelatedSchema();
         $this->load->model('setting/setting');
         if ($this->config->get('module_probg_blog_version') === null) {
-            $this->model_setting_setting->editSetting('module_probg_blog', array('module_probg_blog_status'=>0,'module_probg_blog_sort'=>'date','module_probg_blog_limit'=>10,'module_probg_blog_image_list_width'=>400,'module_probg_blog_image_list_height'=>260,'module_probg_blog_image_article_width'=>900,'module_probg_blog_image_article_height'=>600,'module_probg_blog_image_gallery_width'=>300,'module_probg_blog_image_gallery_height'=>220,'module_probg_blog_default_image'=>'','module_probg_blog_sitemap'=>1,'module_probg_blog_cache'=>1,'module_probg_blog_version'=>'1.0.1'));
+            $this->model_setting_setting->editSetting('module_probg_blog', array('module_probg_blog_status'=>0,'module_probg_blog_sort'=>'date','module_probg_blog_limit'=>10,'module_probg_blog_image_list_width'=>400,'module_probg_blog_image_list_height'=>260,'module_probg_blog_image_article_width'=>900,'module_probg_blog_image_article_height'=>600,'module_probg_blog_image_gallery_width'=>300,'module_probg_blog_image_gallery_height'=>220,'module_probg_blog_default_image'=>'','module_probg_blog_sitemap'=>1,'module_probg_blog_cache'=>1,'module_probg_blog_version'=>'1.0.4'));
         }
     }
 
@@ -39,7 +39,6 @@ class ModelExtensionModuleProbgBlog extends Model {
     public function migrate() {
         $this->ensureCategorySchema();
         $this->ensureArticleRelatedSchema();
-        if ($this->config->get('module_probg_blog_version') === '1.0.1') return;
         $this->cleanupLegacyLayoutModules();
         require_once(DIR_SYSTEM . 'library/probg_blog_seo.php');
         $seo = new ProbgBlogSeo($this->db);
@@ -85,17 +84,34 @@ class ModelExtensionModuleProbgBlog extends Model {
 
         $this->load->model('setting/setting');
         $settings = $this->model_setting_setting->getSetting('module_probg_blog');
-        $settings['module_probg_blog_version'] = '1.0.1';
+        $settings['module_probg_blog_version'] = '1.0.4';
         $this->model_setting_setting->editSetting('module_probg_blog', $settings);
         $this->cache->delete('probg_blog');
     }
 
     private function cleanupLegacyLayoutModules() {
         $legacy_codes = array('probg_blog_articles', 'probg_blog_categories');
+        $layout_column = '';
+
+        // Standard OpenCart 3 stores layout module identifiers in `code`.
+        // Detect the schema first so forks with a different column do not fail.
+        $code_column = $this->db->query("SHOW COLUMNS FROM `" . DB_PREFIX . "layout_module` LIKE 'code'");
+        if ($code_column->num_rows) {
+            $layout_column = 'code';
+        } else {
+            $module_column = $this->db->query("SHOW COLUMNS FROM `" . DB_PREFIX . "layout_module` LIKE 'module'");
+            if ($module_column->num_rows) {
+                $layout_column = 'module';
+            }
+        }
 
         foreach ($legacy_codes as $code) {
             $escaped_code = $this->db->escape($code);
-            $this->db->query("DELETE FROM `" . DB_PREFIX . "layout_module` WHERE `module` = '" . $escaped_code . "' OR `module` LIKE '" . $escaped_code . ".%'");
+
+            if ($layout_column !== '') {
+                $this->db->query("DELETE FROM `" . DB_PREFIX . "layout_module` WHERE `" . $layout_column . "` = '" . $escaped_code . "' OR `" . $layout_column . "` LIKE '" . $escaped_code . ".%'");
+            }
+
             $this->db->query("DELETE FROM `" . DB_PREFIX . "module` WHERE `code` = '" . $escaped_code . "'");
         }
     }
