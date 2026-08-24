@@ -1,0 +1,199 @@
+name: ProBG Blog 1.0.1 Single Module Cleanup
+
+on:
+  push:
+    branches:
+      - fix/1.0.1-single-module-cleanup
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    if: "${{ github.event.head_commit.message == 'chore: prepare ProBG Blog 1.0.1 cleanup' }}"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply 1.0.1 cleanup
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          legacy_files=(
+            upload/admin/controller/extension/module/probg_blog_articles.php
+            upload/admin/controller/extension/module/probg_blog_categories.php
+            upload/admin/language/bg-bg/extension/module/probg_blog_articles.php
+            upload/admin/language/bg-bg/extension/module/probg_blog_categories.php
+            upload/admin/language/en-gb/extension/module/probg_blog_articles.php
+            upload/admin/language/en-gb/extension/module/probg_blog_categories.php
+            upload/admin/view/template/extension/module/probg_blog_articles.twig
+            upload/admin/view/template/extension/module/probg_blog_categories.twig
+            upload/catalog/controller/extension/module/probg_blog_articles.php
+            upload/catalog/controller/extension/module/probg_blog_categories.php
+            upload/catalog/language/bg-bg/extension/module/probg_blog_articles.php
+            upload/catalog/language/bg-bg/extension/module/probg_blog_categories.php
+            upload/catalog/language/en-gb/extension/module/probg_blog_articles.php
+            upload/catalog/language/en-gb/extension/module/probg_blog_categories.php
+            upload/catalog/view/theme/default/template/extension/module/probg_blog_articles.twig
+            upload/catalog/view/theme/default/template/extension/module/probg_blog_categories.twig
+          )
+
+          for file in "${legacy_files[@]}"; do
+            test -f "$file"
+            git rm "$file"
+          done
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_required(path, old, new, count=-1):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              if old not in text:
+                  raise SystemExit(f'Missing expected text in {path}: {old!r}')
+              text = text.replace(old, new, count)
+              p.write_text(text, encoding='utf-8')
+
+          # Package version.
+          replace_required('install.xml', '<version>1.0.0</version>', '<version>1.0.1</version>', 1)
+
+          # Main admin controller: version, stage and permissions.
+          controller_path = Path('upload/admin/controller/extension/module/probg_blog.php')
+          controller = controller_path.read_text(encoding='utf-8')
+          controller = controller.replace("!== '1.0.0'", "!== '1.0.1'")
+          controller = controller.replace("module_probg_blog_version'] = '1.0.0'", "module_probg_blog_version'] = '1.0.1'")
+          controller = controller.replace("$data['stage'] = '12';", "$data['stage'] = '13';")
+          controller = controller.replace("$data['version'] = '1.0.0';", "$data['version'] = '1.0.1';")
+          old_routes = "$routes = array('extension/module/probg_blog','extension/probg_blog/category','extension/probg_blog/article','extension/module/probg_blog_articles','extension/module/probg_blog_categories');"
+          new_routes = "$routes = array('extension/module/probg_blog','extension/probg_blog/category','extension/probg_blog/article');"
+          if old_routes not in controller:
+              raise SystemExit('Legacy permission route list not found in admin controller')
+          controller = controller.replace(old_routes, new_routes, 1)
+          if '1.0.0' in controller:
+              raise SystemExit('Unexpected 1.0.0 remains in main admin controller')
+          controller_path.write_text(controller, encoding='utf-8')
+
+          # Upgrade model: bump version and remove stale legacy module/layout rows on upgrade.
+          model_path = Path('upload/admin/model/extension/module/probg_blog.php')
+          model = model_path.read_text(encoding='utf-8')
+          model = model.replace("module_probg_blog_version'=>'1.0.0'", "module_probg_blog_version'=>'1.0.1'")
+          model = model.replace("=== '1.0.0'", "=== '1.0.1'")
+          model = model.replace("$settings['module_probg_blog_version'] = '1.0.0';", "$settings['module_probg_blog_version'] = '1.0.1';")
+          migrate_marker = "        if ($this->config->get('module_probg_blog_version') === '1.0.1') return;\n        require_once(DIR_SYSTEM . 'library/probg_blog_seo.php');"
+          if migrate_marker not in model:
+              raise SystemExit('Expected migrate version marker not found')
+          model = model.replace(
+              migrate_marker,
+              "        if ($this->config->get('module_probg_blog_version') === '1.0.1') return;\n        $this->cleanupLegacyLayoutModules();\n        require_once(DIR_SYSTEM . 'library/probg_blog_seo.php');",
+              1
+          )
+          method_marker = "    private function ensureCategorySchema() {"
+          cleanup_method = """    private function cleanupLegacyLayoutModules() {\n        $legacy_codes = array('probg_blog_articles', 'probg_blog_categories');\n\n        foreach ($legacy_codes as $code) {\n            $escaped_code = $this->db->escape($code);\n            $this->db->query(\"DELETE FROM `\" . DB_PREFIX . \"layout_module` WHERE `module` = '\" . $escaped_code . \"' OR `module` LIKE '\" . $escaped_code . \".%'\");\n            $this->db->query(\"DELETE FROM `\" . DB_PREFIX . \"module` WHERE `code` = '\" . $escaped_code . \"'\");\n        }\n    }\n\n"""
+          if method_marker not in model:
+              raise SystemExit('ensureCategorySchema marker not found')
+          model = model.replace(method_marker, cleanup_method + method_marker, 1)
+          if "1.0.0" in model:
+              raise SystemExit('Unexpected 1.0.0 remains in main admin model')
+          model_path.write_text(model, encoding='utf-8')
+
+          # Admin release information in both languages.
+          replace_required(
+              'upload/admin/language/bg-bg/extension/module/probg_blog.php',
+              "$_['text_stage_info']='Версия 1.0.0 Beta добавя вградена навигация за блога в текущия ProBG Blog модул, без отделна инсталация.';",
+              "$_['text_stage_info']='Версия 1.0.1 премахва старите отделни layout модули за статии и категории и оставя една инсталация ProBG Blog.';",
+              1
+          )
+          replace_required(
+              'upload/admin/language/en-gb/extension/module/probg_blog.php',
+              "$_['text_stage_info']='Version 1.0.0 Beta adds built-in blog navigation to the existing ProBG Blog module without a separate installation.';",
+              "$_['text_stage_info']='Version 1.0.1 removes the legacy separate Articles and Categories layout modules and keeps a single ProBG Blog installation.';",
+              1
+          )
+
+          # README: version plus bilingual release notes and upgrade instructions.
+          readme_path = Path('README.md')
+          readme = readme_path.read_text(encoding='utf-8')
+          if '- Версия: `1.0.0`' not in readme:
+              raise SystemExit('README version marker not found')
+          readme = readme.replace('- Версия: `1.0.0`', '- Версия: `1.0.1`', 1)
+          release_notes = """## Промени във версия 1.0.1\n\n- Премахнати са старите отделни OpenCart layout модули **ProBG Blog — Статии** и **ProBG Blog — Категории**.\n- В **Extensions → Extensions → Modules** остава само една инсталация: **ProBG Blog**.\n- Административните страници за категории и статии остават в `extension/probg_blog/` като вътрешни CRUD routes и не са отделни инсталирани модули.\n- Премахнати са legacy controller, language и Twig файловете за двата отделни layout модула.\n- Премахнати са legacy permissions routes от инсталацията.\n- При обновяване се почистват старите `module` и `layout_module` записи за `probg_blog_articles` и `probg_blog_categories`.\n- Няма промяна в блог таблиците и няма загуба на категории, статии, изображения, SEO URL или свързани продукти.\n\n## Changes in version 1.0.1\n\n- Removed the legacy standalone **ProBG Blog — Articles** and **ProBG Blog — Categories** OpenCart layout modules.\n- **Extensions → Extensions → Modules** now contains a single installable extension: **ProBG Blog**.\n- Category and article administration remains under `extension/probg_blog/` as internal CRUD routes and is not installed as separate modules.\n- Removed legacy controller, language and Twig files belonging to the two old layout modules.\n- Removed legacy permission routes from installation.\n- Upgrade cleanup removes stale `module` and `layout_module` rows for `probg_blog_articles` and `probg_blog_categories`.\n- No blog database schema is changed and no category, article, image, SEO URL or related-product data is removed.\n\n"""
+          marker = '## Версия и съвместимост\n'
+          if marker not in readme:
+              raise SystemExit('README compatibility marker not found')
+          if '## Промени във версия 1.0.1' not in readme:
+              readme = readme.replace(marker, release_notes + marker, 1)
+
+          upgrade_start = readme.find('## Обновяване до 1.0.0 Beta')
+          uninstall_start = readme.find('## Деинсталация')
+          if upgrade_start == -1 or uninstall_start == -1 or uninstall_start <= upgrade_start:
+              raise SystemExit('README upgrade section markers not found')
+          upgrade = """## Обновяване до 1.0.1\n\nНе деинсталирайте старата версия.\n\n1. Качете новия пакет през **Extensions → Installer**.\n2. Обновете **Extensions → Modifications**.\n3. Отворете **ProBG Blog → Настройки** поне веднъж.\n4. Миграцията ще премахне старите записи за отделните `probg_blog_articles` и `probg_blog_categories` модули и техните layout позиции.\n5. Използвайте единствения **ProBG Blog** модул за layout output и вграденото меню.\n\nСъществуващите категории, статии, изображения, свързани продукти, SEO URL адреси и multi-store настройки не се променят.\n\n### Upgrade to 1.0.1\n\nDo not uninstall the previous version. Upload the new package, refresh Modifications, and open **ProBG Blog → Settings** once to run the migration. Legacy `probg_blog_articles` / `probg_blog_categories` module instances and their layout assignments are removed automatically. Existing blog content and SEO data are preserved.\n\n"""
+          readme = readme[:upgrade_start] + upgrade + readme[uninstall_start:]
+          readme_path.write_text(readme, encoding='utf-8')
+
+          # Bilingual CHANGELOG entry.
+          changelog_path = Path('CHANGELOG.md')
+          changelog = changelog_path.read_text(encoding='utf-8')
+          entry = """## [1.0.1] - 2026-08-24\n\n### fix — Български\n\n- Премахнати са legacy отделните layout модули `probg_blog_articles` и `probg_blog_categories`.\n- Премахнати са техните admin/catalog controllers, language файлове и Twig шаблони.\n- Основният install route вече добавя permissions само за `extension/module/probg_blog`, `extension/probg_blog/category` и `extension/probg_blog/article`.\n- Добавена е upgrade миграция, която почиства старите `module` и `layout_module` записи за премахнатите модули.\n- Версията на OCMOD пакета и вътрешната версия са обновени до `1.0.1`.\n- Запазва се една инсталация **ProBG Blog**, без промяна или загуба на блог съдържание.\n\n### fix — English\n\n- Removed the legacy standalone `probg_blog_articles` and `probg_blog_categories` layout modules.\n- Removed their admin/catalog controllers, language files and Twig templates.\n- The main install route now grants permissions only for `extension/module/probg_blog`, `extension/probg_blog/category` and `extension/probg_blog/article`.\n- Added an upgrade migration that removes stale `module` and `layout_module` rows for the deleted modules.\n- Updated the OCMOD package and internal module version to `1.0.1`.\n- Keeps a single **ProBG Blog** installation without changing or deleting existing blog content.\n\n"""
+          if '## [1.0.1]' not in changelog:
+              if not changelog.startswith('# Changelog\n\n'):
+                  raise SystemExit('Unexpected CHANGELOG header')
+              changelog = '# Changelog\n\n' + entry + changelog[len('# Changelog\n\n'):]
+          changelog_path.write_text(changelog, encoding='utf-8')
+
+          # Development stages.
+          stages_path = Path('docs/STAGES.md')
+          stages = stages_path.read_text(encoding='utf-8')
+          stage_line = '- 1.0.1 — single-module architecture cleanup: removed legacy Articles/Categories layout extensions and added safe upgrade cleanup.\n'
+          if stage_line not in stages:
+              if not stages.endswith('\n'):
+                  stages += '\n'
+              stages += stage_line
+          stages_path.write_text(stages, encoding='utf-8')
+          PY
+
+          # Self-remove this one-off workflow from the final feature commit.
+          git rm .github/workflows/probg-blog-1.0.1-cleanup.yml
+
+      - name: Validate package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if find upload -type f \( -name 'probg_blog_articles.php' -o -name 'probg_blog_articles.twig' -o -name 'probg_blog_categories.php' -o -name 'probg_blog_categories.twig' \) | grep -q .; then
+            echo 'Legacy standalone module files still exist.' >&2
+            find upload -type f \( -name 'probg_blog_articles.php' -o -name 'probg_blog_articles.twig' -o -name 'probg_blog_categories.php' -o -name 'probg_blog_categories.twig' \)
+            exit 1
+          fi
+
+          if grep -R -n -E 'extension/module/probg_blog_(articles|categories)' upload install.xml; then
+            echo 'Legacy module routes still referenced by runtime package.' >&2
+            exit 1
+          fi
+
+          grep -q '<version>1.0.1</version>' install.xml
+          grep -q "module_probg_blog_version.*1.0.1" upload/admin/controller/extension/module/probg_blog.php
+          grep -q "module_probg_blog_version.*1.0.1" upload/admin/model/extension/module/probg_blog.php
+
+          find upload -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          ET.parse('install.xml')
+          print('install.xml: valid XML')
+          PY
+
+      - name: Commit changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Veselin Totev'
+          git config user.email 'v.totev@probg.com'
+          git add -A
+          git commit -m 'fix: consolidate ProBG Blog as single module'
+          git push origin HEAD:fix/1.0.1-single-module-cleanup
