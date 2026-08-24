@@ -1,0 +1,124 @@
+name: ProBG Blog 1.0.3 Permission Fix v2
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fix:
+    if: github.head_ref == 'fix/1.0.3-admin-permission-proxy'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/1.0.3-admin-permission-proxy
+          fetch-depth: 0
+
+      - name: Apply corrected 1.0.3 fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          def replace_once(path, old, new):
+              p = Path(path)
+              text = p.read_text(encoding='utf-8')
+              if old not in text:
+                  raise SystemExit(f'Expected text not found in {path}: {old}')
+              p.write_text(text.replace(old, new, 1), encoding='utf-8')
+
+          replace_once('install.xml', '<version>1.0.2</version>', '<version>1.0.3</version>')
+
+          p = Path('upload/admin/controller/extension/module/probg_blog.php')
+          text = p.read_text(encoding='utf-8')
+          if text.count("'1.0.2'") < 3:
+              raise SystemExit('Expected 1.0.2 version markers in main controller')
+          text = text.replace("'1.0.2'", "'1.0.3'")
+          text = text.replace("$data['stage'] = '14';", "$data['stage'] = '15';", 1)
+          route_anchor = "        $routes = array(\n            'extension/module/probg_blog',\n            'extension/probg_blog/category',\n            'extension/probg_blog/article'\n        );"
+          route_fixed = "        $routes = array(\n            'extension/module/probg_blog',\n            'extension/probg_blog',\n            'extension/probg_blog/category',\n            'extension/probg_blog/article'\n        );"
+          if route_anchor not in text:
+              raise SystemExit('Permission route array anchor not found')
+          text = text.replace(route_anchor, route_fixed, 1)
+          p.write_text(text, encoding='utf-8')
+
+          bg = Path('upload/admin/language/bg-bg/extension/module/probg_blog.php')
+          text = bg.read_text(encoding='utf-8')
+          text = re.sub(r"\$_\['text_stage_info'\]='[^']*';", "$_['text_stage_info']='Версия 1.0.3 коригира OpenCart parent permission route extension/probg_blog за достъп до Категории и Статии.';", text, count=1)
+          bg.write_text(text, encoding='utf-8')
+
+          en = Path('upload/admin/language/en-gb/extension/module/probg_blog.php')
+          text = en.read_text(encoding='utf-8')
+          text = re.sub(r"\$_\['text_stage_info'\]='[^']*';", "$_['text_stage_info']='Version 1.0.3 fixes the OpenCart parent permission route extension/probg_blog required by Categories and Articles.';", text, count=1)
+          en.write_text(text, encoding='utf-8')
+
+          changelog = Path('CHANGELOG.md')
+          text = changelog.read_text(encoding='utf-8')
+          entry = '''## [1.0.3] - 2026-08-24\n\n### fix — Български\n\n- Коригиран е проблемът **„Разрешението е отказано“** за табовете **Категории** и **Статии**.\n- Причината е OpenCart 3 startup permission логиката: routes `extension/probg_blog/category` и `extension/probg_blog/article` се проверяват като родителски route `extension/probg_blog`.\n- Инсталацията и upgrade логиката вече добавят `access` и `modify` право и за `extension/probg_blog`, освен съществуващите права за основния модул и CRUD routes.\n- Не се променя core permission контролерът и не се използва глобален permission bypass.\n- Версията е обновена до `1.0.3`.\n\n### fix — English\n\n- Fixed **Permission Denied** for the **Categories** and **Articles** tabs.\n- Root cause: OpenCart 3 startup permission logic checks `extension/probg_blog/category` and `extension/probg_blog/article` as the parent route `extension/probg_blog`.\n- Install and upgrade permission provisioning now grants `access` and `modify` for `extension/probg_blog` in addition to the existing main-module and CRUD permissions.\n- No core permission controller modification or global permission bypass is used.\n- Updated the version to `1.0.3`.\n\n'''
+          if '## [1.0.3]' not in text:
+              text = text.replace('# Changelog\n\n', '# Changelog\n\n' + entry, 1)
+          changelog.write_text(text, encoding='utf-8')
+
+          readme = Path('README.md')
+          text = readme.read_text(encoding='utf-8')
+          text = text.replace('- Версия: `1.0.1`', '- Версия: `1.0.3`', 1)
+          marker = '`ProBG Blog` е самостоятелен многоезичен блог модул за OpenCart 3 с категории, статии, SEO URL, Open Graph, JSON-LD, sitemap, кеширане, свързани продукти и вградено frontend меню.\n'
+          section = '''\n## Промени във версия 1.0.3\n\n- Добавено е липсващото OpenCart parent permission право `extension/probg_blog`.\n- Това е route-ът, който OpenCart 3 реално проверява при отваряне на `extension/probg_blog/category` и `extension/probg_blog/article`.\n- Запазени са отделните `modify` права за CRUD операциите на категории и статии.\n- Не се модифицира глобалната OpenCart permission логика.\n\n## Changes in version 1.0.3\n\n- Added the missing OpenCart parent permission `extension/probg_blog`.\n- This is the route OpenCart 3 actually checks when opening `extension/probg_blog/category` and `extension/probg_blog/article`.\n- Existing dedicated `modify` permissions for category/article CRUD operations are preserved.\n- The global OpenCart permission logic is not modified.\n'''
+          if '## Промени във версия 1.0.3' not in text:
+              text = text.replace(marker, marker + section, 1)
+          readme.write_text(text, encoding='utf-8')
+
+          stages = Path('docs/STAGES.md')
+          text = stages.read_text(encoding='utf-8')
+          line = '- 1.0.3 — fixed the missing OpenCart parent permission `extension/probg_blog` required for integrated Categories/Articles routes.\n'
+          if line not in text:
+              if not text.endswith('\n'):
+                  text += '\n'
+              text += line
+          stages.write_text(text, encoding='utf-8')
+
+          Path('docs/1.0.3.md').write_text('''# ProBG Blog 1.0.3\n\n## Български\n\nOpenCart 3 нормализира административните routes `extension/probg_blog/category` и `extension/probg_blog/article` до `extension/probg_blog` при startup access проверката. Версия 1.0.2 добавяше права за child routes, но липсваше родителското `extension/probg_blog`, което водеше до **„Разрешението е отказано“** преди зареждането на controller-а.\n\nВерсия 1.0.3 добавя `access` и `modify` за `extension/probg_blog`, като запазва отделните CRUD permissions. След обновяване отворете **ProBG Blog → Настройки** веднъж и изпълнете **Extensions → Modifications → Refresh**.\n\n## English\n\nOpenCart 3 normalizes the administration routes `extension/probg_blog/category` and `extension/probg_blog/article` to `extension/probg_blog` during the startup access check. Version 1.0.2 granted the child routes but missed the parent `extension/probg_blog` permission, causing **Permission Denied** before the controller was loaded.\n\nVersion 1.0.3 grants `access` and `modify` for `extension/probg_blog` while preserving the dedicated CRUD permissions. After upgrading, open **ProBG Blog → Settings** once and run **Extensions → Modifications → Refresh**.\n''', encoding='utf-8')
+
+          Path('.trigger-1.0.3').unlink(missing_ok=True)
+          Path('.github/workflows/probg-blog-1.0.3-fix.yml').unlink(missing_ok=True)
+          Path('.github/workflows/probg-blog-1.0.3-fix-v2.yml').unlink(missing_ok=True)
+          PY
+
+      - name: Validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          find upload -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -r '$x=simplexml_load_file("install.xml"); if (!$x || (string)$x->version !== "1.0.3") exit(1);'
+          grep -q "'extension/probg_blog'," upload/admin/controller/extension/module/probg_blog.php
+          grep -q "'extension/probg_blog/category'," upload/admin/controller/extension/module/probg_blog.php
+          grep -q "'extension/probg_blog/article'" upload/admin/controller/extension/module/probg_blog.php
+          ! grep -q 'admin/controller/startup/permission.php' install.xml
+
+      - name: Commit feature branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Veselin Totev'
+          git config user.email 'v.totev@probg.com'
+          git add -A
+          git commit -m 'fix: add parent blog permission route (1.0.3)'
+          git push origin HEAD:fix/1.0.3-admin-permission-proxy
+
+      - name: Remove one-off workflows from main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout -B cleanup-main origin/main
+          git rm -f .github/workflows/probg-blog-1.0.3-fix.yml .github/workflows/probg-blog-1.0.3-fix-v2.yml
+          git commit -m 'chore: remove one-off 1.0.3 workflows'
+          git push origin HEAD:main
