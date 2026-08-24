@@ -69,6 +69,15 @@
     </operation>
   </file>
 
+  <file path="catalog/controller/extension/module/probg_blog.php">
+    <operation error="skip">
+      <search><![CDATA[$this->config->set('probg_blog_social_meta',$meta);]]></search>
+      <add position="before"><![CDATA[
+        $meta = str_replace(array('\n', '\"'), array("\n", '"'), $meta);
+      ]]></add>
+    </operation>
+  </file>
+
   <file path="catalog/controller/common/header.php">
     <operation error="skip">
       <search><![CDATA[$data['name'] = $this->config->get('config_name');]]></search>
