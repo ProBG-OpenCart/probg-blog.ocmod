@@ -14,3 +14,4 @@
 - 0.12.0 — built-in frontend blog menu inside the existing ProBG Blog installation and configurable layout output mode.
 - 1.0.0-beta — consolidated beta release with the complete blog feature set, related products and built-in frontend menu.
 - 1.0.1 — single-module architecture cleanup: removed legacy Articles/Categories layout extensions and added safe upgrade cleanup.
+- 1.0.2 — fixed upgrade permissions for integrated Categories/Articles routes and normalized the administration overview styling.
