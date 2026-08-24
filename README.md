@@ -2,9 +2,29 @@
 
 `ProBG Blog` е самостоятелен многоезичен блог модул за OpenCart 3 с категории, статии, SEO URL, Open Graph, JSON-LD, sitemap, кеширане, свързани продукти и вградено frontend меню.
 
+## Промени във версия 1.0.1
+
+- Премахнати са старите отделни OpenCart layout модули **ProBG Blog — Статии** и **ProBG Blog — Категории**.
+- В **Extensions → Extensions → Modules** остава само една инсталация: **ProBG Blog**.
+- Административните страници за категории и статии остават в `extension/probg_blog/` като вътрешни CRUD routes и не са отделни инсталирани модули.
+- Премахнати са legacy controller, language и Twig файловете за двата отделни layout модула.
+- Премахнати са legacy permissions routes от инсталацията.
+- При обновяване се почистват старите `module` и `layout_module` записи за `probg_blog_articles` и `probg_blog_categories`.
+- Няма промяна в блог таблиците и няма загуба на категории, статии, изображения, SEO URL или свързани продукти.
+
+## Changes in version 1.0.1
+
+- Removed the legacy standalone **ProBG Blog — Articles** and **ProBG Blog — Categories** OpenCart layout modules.
+- **Extensions → Extensions → Modules** now contains a single installable extension: **ProBG Blog**.
+- Category and article administration remains under `extension/probg_blog/` as internal CRUD routes and is not installed as separate modules.
+- Removed legacy controller, language and Twig files belonging to the two old layout modules.
+- Removed legacy permission routes from installation.
+- Upgrade cleanup removes stale `module` and `layout_module` rows for `probg_blog_articles` and `probg_blog_categories`.
+- No blog database schema is changed and no category, article, image, SEO URL or related-product data is removed.
+
 ## Версия и съвместимост
 
-- Версия: `1.0.0`
+- Версия: `1.0.1`
 - Статус: **Beta**
 - Целева съвместимост: OpenCart `3.0.2.x` и `3.0.3.x`
 - PHP: код, съвместим с типичните PHP 7.x среди за OpenCart 3
@@ -301,17 +321,21 @@ SEO адресите се записват в стандартната `{DB_PREF
 
 За менюто не се инсталира второ разширение.
 
-## Обновяване до 1.0.0 Beta
+## Обновяване до 1.0.1
 
 Не деинсталирайте старата версия.
 
 1. Качете новия пакет през **Extensions → Installer**.
 2. Обновете **Extensions → Modifications**.
 3. Отворете **ProBG Blog → Настройки** поне веднъж.
-4. Миграцията добавя новите настройки на менюто със безопасни стойности по подразбиране.
-5. Съществуващите layout позиции остават в режим **Последни статии**, докато не изберете **Меню**.
+4. Миграцията ще премахне старите записи за отделните `probg_blog_articles` и `probg_blog_categories` модули и техните layout позиции.
+5. Използвайте единствения **ProBG Blog** модул за layout output и вграденото меню.
 
 Съществуващите категории, статии, изображения, свързани продукти, SEO URL адреси и multi-store настройки не се променят.
+
+### Upgrade to 1.0.1
+
+Do not uninstall the previous version. Upload the new package, refresh Modifications, and open **ProBG Blog → Settings** once to run the migration. Legacy `probg_blog_articles` / `probg_blog_categories` module instances and their layout assignments are removed automatically. Existing blog content and SEO data are preserved.
 
 ## Деинсталация
 
