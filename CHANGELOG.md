@@ -1,5 +1,27 @@
 # Changelog
 
+## [1.2.0] - 2026-08-24
+
+### feat — Български
+
+- Добавен е lightbox преглед на допълнителните изображения в галерията на статия, подобен на Fancybox.
+- Използва се стандартният за OpenCart 3 Magnific Popup, без външен CDN или допълнителна библиотека.
+- Добавени са предишно/следващо изображение, брояч на позицията и клавиатурна навигация.
+- Thumbnail изображенията получават zoom индикатор и responsive hover/focus състояния.
+- Добавен е отделен `probg_blog_lightbox.css` за fullscreen overlay, transitions и mobile оптимизация.
+- При липса на JavaScript lightbox компонент оригиналните image links продължават да работят като нормални линкове.
+- OCMOD версията е обновена до `1.2.0`, а административният етап до Stage 21.
+
+### feat — English
+
+- Added a Fancybox-style lightbox viewer for additional article gallery images.
+- Uses OpenCart 3's bundled Magnific Popup with no external CDN or extra library installation.
+- Added previous/next navigation, current/total image counter and keyboard controls.
+- Gallery thumbnails now include a zoom indicator and responsive hover/focus states.
+- Added dedicated `probg_blog_lightbox.css` for fullscreen overlay styling, transitions and mobile optimization.
+- If the JavaScript lightbox component is unavailable, original image links continue to work as normal links.
+- Updated the OCMOD version to `1.2.0` and administration stage to Stage 21.
+
 ## [1.1.1] - 2026-08-24
 
 ### fix — Български

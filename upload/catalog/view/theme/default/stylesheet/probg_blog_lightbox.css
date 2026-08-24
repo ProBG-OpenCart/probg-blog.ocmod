@@ -1,0 +1,109 @@
+.probg-blog-gallery-link {
+  position: relative;
+  cursor: zoom-in;
+}
+
+.probg-blog-gallery-zoom {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.5rem;
+  background: rgba(15, 23, 42, 0.28);
+  opacity: 0;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+  pointer-events: none;
+}
+
+.probg-blog-gallery-link:hover .probg-blog-gallery-zoom,
+.probg-blog-gallery-link:focus .probg-blog-gallery-zoom,
+.probg-blog-gallery-link:focus-visible .probg-blog-gallery-zoom {
+  opacity: 1;
+  background: rgba(15, 23, 42, 0.42);
+}
+
+.probg-blog-lightbox.mfp-bg {
+  background: #020617;
+  opacity: 0.94;
+}
+
+.probg-blog-lightbox .mfp-content {
+  max-width: min(94vw, 1600px);
+}
+
+.probg-blog-lightbox .mfp-figure::after {
+  border-radius: 0.75rem;
+  box-shadow: 0 1rem 4rem rgba(0, 0, 0, 0.45);
+}
+
+.probg-blog-lightbox .mfp-img {
+  max-height: 88vh !important;
+  border-radius: 0.75rem;
+}
+
+.probg-blog-lightbox .mfp-bottom-bar {
+  margin-top: 0.75rem;
+}
+
+.probg-blog-lightbox .mfp-title,
+.probg-blog-lightbox .mfp-counter {
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.probg-blog-lightbox .mfp-arrow {
+  opacity: 0.9;
+}
+
+.probg-blog-lightbox .mfp-arrow:hover,
+.probg-blog-lightbox .mfp-close:hover {
+  opacity: 1;
+}
+
+.probg-blog-lightbox.mfp-wrap .mfp-content {
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.mfp-fade.mfp-bg {
+  opacity: 0;
+  transition: opacity 0.18s ease-out;
+}
+
+.mfp-fade.mfp-bg.mfp-ready {
+  opacity: 0.94;
+}
+
+.mfp-fade.mfp-bg.mfp-removing {
+  opacity: 0;
+}
+
+.mfp-fade.mfp-wrap .mfp-content {
+  opacity: 0;
+  transform: scale(0.985);
+}
+
+.mfp-fade.mfp-wrap.mfp-ready .mfp-content {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.mfp-fade.mfp-wrap.mfp-removing .mfp-content {
+  opacity: 0;
+  transform: scale(0.985);
+}
+
+@media (max-width: 767.98px) {
+  .probg-blog-gallery-zoom {
+    opacity: 1;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding: 0.75rem;
+    font-size: 1.1rem;
+    background: linear-gradient(to top left, rgba(15, 23, 42, 0.45), rgba(15, 23, 42, 0) 45%);
+  }
+
+  .probg-blog-lightbox .mfp-img {
+    max-height: 82vh !important;
+  }
+}
