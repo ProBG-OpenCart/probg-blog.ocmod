@@ -1,0 +1,168 @@
+name: ProBG Blog 1.0.6 Social Meta Fix
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  apply-fix:
+    if: github.head_ref == 'fix/1.0.6-social-meta-output'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/1.0.6-social-meta-output
+          fetch-depth: 0
+
+      - name: Apply 1.0.6 fix
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          catalog = Path('upload/catalog/controller/extension/module/probg_blog.php')
+          text = catalog.read_text(encoding='utf-8')
+          start = text.index('    private function social(')
+          end = text.index('    private function breadcrumbs(', start)
+          new = '''    private function social($title,$description,$url,$type,$image='',$article=array()) {
+        $site = $this->config->get('config_name');
+        $meta = array(
+            '<meta property="og:type" content="' . htmlspecialchars($type, ENT_QUOTES, 'UTF-8') . '" />',
+            '<meta property="og:title" content="' . htmlspecialchars($title, ENT_QUOTES, 'UTF-8') . '" />',
+            '<meta property="og:description" content="' . htmlspecialchars(strip_tags($description), ENT_QUOTES, 'UTF-8') . '" />',
+            '<meta property="og:url" content="' . htmlspecialchars($url, ENT_QUOTES, 'UTF-8') . '" />',
+            '<meta property="og:site_name" content="' . htmlspecialchars($site, ENT_QUOTES, 'UTF-8') . '" />'
+        );
+
+        if ($image) {
+            $meta[] = '<meta property="og:image" content="' . htmlspecialchars($image, ENT_QUOTES, 'UTF-8') . '" />';
+        }
+
+        $meta[] = '<meta name="twitter:card" content="' . ($image ? 'summary_large_image' : 'summary') . '" />';
+        $meta[] = '<meta name="twitter:title" content="' . htmlspecialchars($title, ENT_QUOTES, 'UTF-8') . '" />';
+        $meta[] = '<meta name="twitter:description" content="' . htmlspecialchars(strip_tags($description), ENT_QUOTES, 'UTF-8') . '" />';
+
+        if ($image) {
+            $meta[] = '<meta name="twitter:image" content="' . htmlspecialchars($image, ENT_QUOTES, 'UTF-8') . '" />';
+        }
+
+        $json = array('@context'=>'https://schema.org','@type'=>$type==='article'?'BlogPosting':'Blog','name'=>$title,'url'=>$url);
+        if ($type === 'article') {
+            $json['headline'] = $title;
+            $json['datePublished'] = $article['date_added'];
+            $json['dateModified'] = $article['date_modified'];
+            $json['articleSection'] = $article['category_title'];
+            if ($image) $json['image'] = $image;
+        }
+
+        $meta[] = '<script type="application/ld+json">' . json_encode($json, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . '</script>';
+        $this->config->set('probg_blog_social_meta', implode("\n", $meta));
+    }
+
+'''
+          catalog.write_text(text[:start] + new + text[end:], encoding='utf-8')
+
+          install = Path('install.xml')
+          t = install.read_text(encoding='utf-8').replace('<version>1.0.5</version>', '<version>1.0.6</version>', 1)
+          install.write_text(t, encoding='utf-8')
+
+          controller = Path('upload/admin/controller/extension/module/probg_blog.php')
+          t = controller.read_text(encoding='utf-8').replace("'1.0.5'", "'1.0.6'")
+          t = t.replace("$data['stage'] = '17';", "$data['stage'] = '18';", 1)
+          controller.write_text(t, encoding='utf-8')
+
+          model = Path('upload/admin/model/extension/module/probg_blog.php')
+          t = model.read_text(encoding='utf-8')
+          t = t.replace("'module_probg_blog_version'=>'1.0.4'", "'module_probg_blog_version'=>'1.0.6'")
+          t = t.replace("$settings['module_probg_blog_version'] = '1.0.4';", "$settings['module_probg_blog_version'] = '1.0.6';")
+          model.write_text(t, encoding='utf-8')
+
+          for path, message in [
+              ('upload/admin/language/bg-bg/extension/module/probg_blog.php', 'Версия 1.0.6 коригира буквалните \\n и невалидното escape-ване на Open Graph/Twitter мета таговете във frontend.'),
+              ('upload/admin/language/en-gb/extension/module/probg_blog.php', 'Version 1.0.6 fixes literal \\n output and invalid escaping in storefront Open Graph/Twitter meta tags.')
+          ]:
+              p = Path(path)
+              s = p.read_text(encoding='utf-8')
+              s, n = re.subn(r"\$_\['text_stage_info'\]='[^']*';", "$_['text_stage_info']='" + message + "';", s, count=1)
+              if n != 1:
+                  raise SystemExit('Stage info not found in ' + path)
+              p.write_text(s, encoding='utf-8')
+
+          changelog = Path('CHANGELOG.md')
+          s = changelog.read_text(encoding='utf-8')
+          entry = '''## [1.0.6] - 2026-08-24
+
+### fix — Български
+
+- Коригирано е показването на буквални `\\n` символи над frontend съдържанието на блог страници и статии.
+- Причината беше използване на `\\n` и `\\"` в single-quoted PHP strings при генериране на Open Graph и Twitter мета тагове.
+- Social meta генераторът вече използва валидни HTML атрибути и `implode("\\n", ...)` за реални нови редове.
+- Запазени са Open Graph, Twitter Cards и JSON-LD данните.
+- Синхронизирана е вътрешната версия на admin controller/model до `1.0.6`.
+
+### fix — English
+
+- Fixed literal `\\n` characters rendered above storefront blog pages and articles.
+- Root cause was `\\n` and `\\"` inside single-quoted PHP strings used to build Open Graph and Twitter metadata.
+- The social metadata generator now emits valid HTML attributes and uses `implode("\\n", ...)` for real line breaks.
+- Open Graph, Twitter Cards and JSON-LD output are preserved.
+- Synchronized the internal admin controller/model version to `1.0.6`.
+
+'''
+          if '## [1.0.6]' not in s:
+              s = s.replace('# Changelog\n\n', '# Changelog\n\n' + entry, 1)
+          changelog.write_text(s, encoding='utf-8')
+
+          stages = Path('docs/STAGES.md')
+          s = stages.read_text(encoding='utf-8')
+          line = '- 1.0.6 — fixed literal newline/backslash output in storefront social metadata and normalized generated Open Graph/Twitter HTML.\n'
+          if line not in s:
+              if not s.endswith('\n'): s += '\n'
+              s += line
+          stages.write_text(s, encoding='utf-8')
+
+          Path('docs/1.0.6.md').write_text('''# ProBG Blog 1.0.6\n\n## Български\n\nВерсия 1.0.6 коригира показването на буквални `\\n` символи над frontend страниците на блога. Причината беше social meta генераторът, който използваше `\\n` и escape-нати двойни кавички в single-quoted PHP strings. PHP ги извеждаше буквално, а браузърът можеше да премести невалидното съдържание от `<head>` към началото на `<body>`.\n\nOpen Graph и Twitter мета таговете вече се изграждат като отделни валидни HTML редове и се обединяват с реални нови редове. JSON-LD се запазва.\n\n## English\n\nVersion 1.0.6 fixes literal `\\n` output above storefront blog pages. The social metadata generator used `\\n` and escaped double quotes inside single-quoted PHP strings, causing PHP to output those characters literally. Browsers could then move malformed head content into the beginning of the body.\n\nOpen Graph and Twitter tags are now generated as valid HTML lines joined with real newline characters. JSON-LD output is preserved.\n''', encoding='utf-8')
+
+          for p in [Path('docs/.noop-1.0.6'), Path('docs/.noop-1.0.6b'), Path('docs/.noop-1.0.6c'), Path('.trigger-1.0.6'), Path('.github/workflows/apply-1.0.6.yml')]:
+              p.unlink(missing_ok=True)
+          PY
+
+      - name: Validate
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -l upload/catalog/controller/extension/module/probg_blog.php
+          php -l upload/admin/controller/extension/module/probg_blog.php
+          php -l upload/admin/model/extension/module/probg_blog.php
+          php -r '$x=simplexml_load_file("install.xml"); if (!$x || (string)$x->version !== "1.0.6") exit(1);'
+          ! grep -Fq "property=\\\"og:type" upload/catalog/controller/extension/module/probg_blog.php
+          ! grep -Fq " />\\n<meta" upload/catalog/controller/extension/module/probg_blog.php
+          grep -Fq 'implode("\n", $meta)' upload/catalog/controller/extension/module/probg_blog.php
+
+      - name: Commit feature branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'Veselin Totev'
+          git config user.email 'v.totev@probg.com'
+          git add -A
+          git commit -m 'fix: normalize storefront social metadata output (1.0.6)'
+          git push origin HEAD:fix/1.0.6-social-meta-output
+
+      - name: Remove one-off workflow from main
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout -B cleanup-main origin/main
+          git rm .github/workflows/probg-blog-1.0.6-fix.yml
+          git commit -m 'chore: remove one-off 1.0.6 workflow'
+          git push origin HEAD:main
