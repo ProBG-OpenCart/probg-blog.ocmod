@@ -2,7 +2,7 @@
 <modification>
   <name>ProBG Blog</name>
   <code>probg_blog</code>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
   <author>ProBG</author>
   <link>https://probg.com/</link>
 
@@ -30,11 +30,11 @@
   <file path="admin/controller/extension/module/probg_blog.php">
     <operation error="skip">
       <search><![CDATA[$data['stage'] = '17';]]></search>
-      <add position="replace"><![CDATA[$data['stage'] = '19';]]></add>
+      <add position="replace"><![CDATA[$data['stage'] = '20';]]></add>
     </operation>
     <operation error="skip">
       <search><![CDATA[$data['version'] = '1.0.5';]]></search>
-      <add position="replace"><![CDATA[$data['version'] = '1.1.0';]]></add>
+      <add position="replace"><![CDATA[$data['version'] = '1.1.1';]]></add>
     </operation>
   </file>
 
@@ -85,6 +85,28 @@
       <search><![CDATA[if (!$this->config->get('module_probg_blog_status')) return '';]]></search>
       <add position="after"><![CDATA[
         $this->document->addStyle('catalog/view/theme/default/stylesheet/probg_blog.css');
+      ]]></add>
+    </operation>
+    <operation error="skip">
+      <search><![CDATA[if ($setting && !isset($this->request->get['probg_blog_category_id']) && !isset($this->request->get['probg_blog_article_id'])) {
+            return $this->module($setting);
+        }]]></search>
+      <add position="replace"><![CDATA[
+        $category_id = isset($this->request->get['probg_blog_category_id']) ? (int)$this->request->get['probg_blog_category_id'] : 0;
+        $article_id = isset($this->request->get['probg_blog_article_id']) ? (int)$this->request->get['probg_blog_article_id'] : 0;
+        $route = isset($this->request->get['route']) ? (string)$this->request->get['route'] : '';
+        $is_blog_page = ($route === 'extension/module/probg_blog' || $category_id || $article_id);
+
+        // OpenCart can invoke a non-instance module from a layout without passing
+        // a $setting array. On non-blog routes that call must render only the
+        // configured layout block, never the full blog page.
+        if (!$is_blog_page || $this->config->get('probg_blog_page_rendering')) {
+            return $this->module(is_array($setting) ? $setting : array());
+        }
+
+        // Prevent recursive full-page rendering when ProBG Blog is also assigned
+        // to a layout used by the blog section itself.
+        $this->config->set('probg_blog_page_rendering', 1);
       ]]></add>
     </operation>
     <operation error="skip">
