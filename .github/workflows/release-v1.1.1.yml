@@ -1,0 +1,103 @@
+name: Release ProBG Blog v1.1.1
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.head_ref == 'chore/release-v1.1.1-trigger'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Validate source
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r '$x=simplexml_load_file("install.xml"); if (!$x || (string)$x->version !== "1.1.1") { fwrite(STDERR, "install.xml version is not 1.1.1\n"); exit(1); }'
+          find upload -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Build OCMOD package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          rm -f dist/probg-blog-1.1.1.ocmod.zip
+          zip -qr dist/probg-blog-1.1.1.ocmod.zip install.xml upload
+          unzip -t dist/probg-blog-1.1.1.ocmod.zip
+          find dist -maxdepth 1 -type f -name 'probg-blog-*.ocmod.zip' -print0 | sort -z | xargs -0 sha256sum | sed 's#  dist/#  #' > dist/SHA256SUMS
+
+      - name: Prepare release notes
+        shell: bash
+        run: |
+          cat > /tmp/release-notes.md <<'EOF'
+          ## Български
+
+          **ProBG Blog 1.1.1** коригира критичен проблем при използване на модула в **Design → Layouts**.
+
+          ### Корекции
+          - Поправено е рекурсивното зареждане на ProBG Blog, когато модулът е поставен на началната страница или друг layout.
+          - Layout извикванията вече рендерират само избрания блок **Меню** или **Последни статии**.
+          - Директните blog/category/article routes продължават да зареждат пълната блог страница.
+          - Добавена е request-level защита срещу повторно пълно рендериране на блога.
+          - Запазени са Bootstrap 5 storefront шаблоните от 1.1.0.
+
+          ### Обновяване
+          След инсталация изпълнете **Extensions → Modifications → Refresh** и изчистете theme/cache при нужда.
+
+          ## English
+
+          **ProBG Blog 1.1.1** fixes a critical issue when the module is assigned through **Design → Layouts**.
+
+          ### Fixes
+          - Fixed recursive ProBG Blog rendering when assigned to the home page or another layout.
+          - Layout calls now render only the configured **Menu** or **Latest Articles** block.
+          - Direct blog/category/article routes continue to render the full blog page.
+          - Added a request-level guard against recursive full-page rendering.
+          - Preserved the Bootstrap 5 storefront templates introduced in 1.1.0.
+
+          ### Upgrade
+          After installation run **Extensions → Modifications → Refresh** and clear theme/cache if required.
+          EOF
+
+      - name: Commit release artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin refs/tags/v1.1.1 >/dev/null 2>&1; then
+            echo 'Tag v1.1.1 already exists; refusing to overwrite it.' >&2
+            exit 1
+          fi
+          if gh release view v1.1.1 >/dev/null 2>&1; then
+            echo 'Release v1.1.1 already exists; refusing to overwrite it.' >&2
+            exit 1
+          fi
+          git config user.name 'Veselin Totev'
+          git config user.email 'v.totev@probg.com'
+          git add dist
+          git rm .github/workflows/release-v1.1.1.yml
+          git commit -m 'release: ProBG Blog v1.1.1'
+          git push origin HEAD:main
+
+      - name: Create tag and GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git tag -a v1.1.1 -m 'ProBG Blog v1.1.1'
+          git push origin v1.1.1
+          gh release create v1.1.1 dist/probg-blog-1.1.1.ocmod.zip \
+            --title 'ProBG Blog 1.1.1' \
+            --notes-file /tmp/release-notes.md \
+            --verify-tag
