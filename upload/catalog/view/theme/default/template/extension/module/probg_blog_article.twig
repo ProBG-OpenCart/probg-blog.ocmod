@@ -1,39 +1,87 @@
 {{ header }}
-<div id="common-probg-blog-article" class="container">
-  <ul class="breadcrumb">{% for breadcrumb in breadcrumbs %}<li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>{% endfor %}</ul>
+<div id="common-probg-blog-article" class="container probg-blog-page probg-blog-article-page">
+  <nav aria-label="breadcrumb" class="probg-blog-breadcrumb">
+    <ol class="breadcrumb">
+      {% for breadcrumb in breadcrumbs %}
+        {% set breadcrumb_text = breadcrumb.text %}
+        {% if not breadcrumb_text and category and breadcrumb.href == category.href %}{% set breadcrumb_text = category.title %}{% endif %}
+        {% if breadcrumb_text %}
+          {% if loop.last %}
+            <li class="breadcrumb-item active" aria-current="page">{{ breadcrumb_text }}</li>
+          {% else %}
+            <li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb_text }}</a></li>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    </ol>
+  </nav>
+
   <div class="row">{{ column_left }}
-    {% if column_left and column_right %}{% set class = 'col-sm-6' %}{% elseif column_left or column_right %}{% set class = 'col-sm-9' %}{% else %}{% set class = 'col-sm-12' %}{% endif %}
-    <div id="content" class="{{ class }}">{{ content_top }}
-      <article><h1>{{ heading_title }}</h1><p class="text-muted"><small>{{ text_category }}: <a href="{{ category.href }}">{{ category.title }}</a> · {{ text_published }}: {{ date_added }}{% if date_modified != date_added %} · {{ text_modified }}: {{ date_modified }}{% endif %}</small></p>
-        {% if image %}<p><img src="{{ image }}" alt="{{ heading_title }}" class="img-responsive"></p>{% endif %}
-        {% if short_description %}<div class="lead">{{ short_description }}</div>{% endif %}
-        <div class="probg-blog-article-body">{{ description }}</div>
-        {% if images %}<div class="row probg-blog-gallery">{% for image in images %}<div class="col-xs-6 col-sm-4"><a href="{{ image.popup }}" class="thumbnail"><img src="{{ image.thumb }}" alt="{{ heading_title }}"></a></div>{% endfor %}</div>{% endif %}
+    {% if column_left and column_right %}{% set class = 'col-sm-6 col-lg-6' %}{% elseif column_left or column_right %}{% set class = 'col-sm-9 col-lg-9' %}{% else %}{% set class = 'col-sm-12 col-lg-12' %}{% endif %}
+    <main id="content" class="{{ class }}">{{ content_top }}
+      <article class="probg-blog-article">
+        <header class="probg-blog-article-header mb-4">
+          <h1 class="display-6 fw-bold mb-3">{{ heading_title }}</h1>
+          <div class="probg-blog-meta d-flex flex-wrap align-items-center gap-2">
+            <a class="badge rounded-pill text-bg-primary text-decoration-none" href="{{ category.href }}">{{ category.title }}</a>
+            <span class="text-muted">{{ text_published }}: {{ date_added }}</span>
+            {% if date_modified != date_added %}<span class="text-muted">{{ text_modified }}: {{ date_modified }}</span>{% endif %}
+          </div>
+        </header>
+
+        {% if image %}
+          <figure class="probg-blog-hero card border-0 overflow-hidden shadow-sm mb-4">
+            <img src="{{ image }}" alt="{{ heading_title }}" class="img-fluid w-100">
+          </figure>
+        {% endif %}
+
+        {% if short_description %}<div class="probg-blog-lead lead border-start border-4 ps-3 py-2 mb-4">{{ short_description }}</div>{% endif %}
+        <div class="probg-blog-article-body mb-5">{{ description }}</div>
+
+        {% if images %}
+          <section class="probg-blog-gallery-section mb-5">
+            <h2 class="h4 mb-3">{{ heading_title }}</h2>
+            <div class="row g-3 probg-blog-gallery">
+              {% for image in images %}
+                <div class="col-6 col-sm-6 col-md-4">
+                  <a href="{{ image.popup }}" class="card border-0 shadow-sm overflow-hidden h-100 probg-blog-gallery-link">
+                    <img src="{{ image.thumb }}" alt="{{ heading_title }}" class="img-fluid w-100">
+                  </a>
+                </div>
+              {% endfor %}
+            </div>
+          </section>
+        {% endif %}
       </article>
 
       {% if products %}
-        <h3>{{ text_related }}</h3>
-        <div class="row">
-          {% for product in products %}
-            <div class="product-layout product-grid col-lg-3 col-md-3 col-sm-6 col-xs-12">
-              <div class="product-thumb transition">
-                <div class="image"><a href="{{ product.href }}"><img src="{{ product.thumb }}" alt="{{ product.name }}" title="{{ product.name }}" class="img-responsive"></a></div>
-                <div class="caption">
-                  <h4><a href="{{ product.href }}">{{ product.name }}</a></h4>
-                  <p>{{ product.description }}</p>
-                  {% if product.price %}
-                    <p class="price">
-                      {% if not product.special %}{{ product.price }}{% else %}<span class="price-new">{{ product.special }}</span> <span class="price-old">{{ product.price }}</span>{% endif %}
-                    </p>
-                  {% endif %}
+        <section class="probg-blog-related mb-5">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h2 class="h3 mb-0">{{ text_related }}</h2>
+          </div>
+          <div class="row g-4 probg-blog-grid">
+            {% for product in products %}
+              <div class="col-sm-6 col-lg-3">
+                <div class="card h-100 border-0 shadow-sm probg-blog-product-card">
+                  <a href="{{ product.href }}" class="probg-blog-card-image"><img src="{{ product.thumb }}" alt="{{ product.name }}" title="{{ product.name }}" class="card-img-top img-fluid"></a>
+                  <div class="card-body d-flex flex-column">
+                    <h3 class="h6 card-title"><a href="{{ product.href }}" class="text-decoration-none">{{ product.name }}</a></h3>
+                    <p class="card-text text-muted small flex-grow-1">{{ product.description }}</p>
+                    {% if product.price %}
+                      <div class="probg-blog-price mt-auto">
+                        {% if not product.special %}<span class="fw-semibold">{{ product.price }}</span>{% else %}<span class="fw-bold text-danger">{{ product.special }}</span> <span class="text-muted text-decoration-line-through small">{{ product.price }}</span>{% endif %}
+                      </div>
+                    {% endif %}
+                  </div>
                 </div>
               </div>
-            </div>
-          {% endfor %}
-        </div>
+            {% endfor %}
+          </div>
+        </section>
       {% endif %}
 
-      {{ content_bottom }}</div>{{ column_right }}
+      {{ content_bottom }}
+    </main>{{ column_right }}
   </div>
 </div>
 {% if images %}<script type="text/javascript"><!--
