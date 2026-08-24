@@ -1,0 +1,109 @@
+name: Release ProBG Blog 1.1.0
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [opened]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.head_ref == 'chore/release-1.1.0-trigger'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Validate source
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r '$x=simplexml_load_file("install.xml"); if (!$x || (string)$x->version !== "1.1.0") { fwrite(STDERR, "install.xml version is not 1.1.0\n"); exit(1); }'
+          find upload -type f -name '*.php' -print0 | xargs -0 -n1 php -l
+
+      - name: Build OCMOD package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          rm -f dist/probg-blog-1.1.0.ocmod.zip
+          zip -qr dist/probg-blog-1.1.0.ocmod.zip install.xml upload
+          unzip -t dist/probg-blog-1.1.0.ocmod.zip
+          find dist -maxdepth 1 -type f -name 'probg-blog-*.ocmod.zip' -print0 | sort -z | xargs -0 sha256sum | sed 's#  dist/#  #' > dist/SHA256SUMS
+
+      - name: Prepare release notes
+        shell: bash
+        run: |
+          cat > /tmp/release-notes.md <<'EOF'
+          ## Български
+
+          **ProBG Blog 1.1.0** е feature release с обновен storefront дизайн и корекция на breadcrumb навигацията.
+
+          ### Основни промени
+          - Коригиран е breadcrumb-ът на статия: **Начало → Блог → Категория → Статия**.
+          - Преработени са публичните шаблони с Bootstrap 5 компоненти.
+          - Обновени са основната блог страница, категорията и статията.
+          - Обновени са блокът с последни статии и вграденото блог меню.
+          - Галерията и свързаните продукти използват responsive Bootstrap 5 card/grid структура.
+          - Добавен е scoped `probg_blog.css` с fallback стилове за OpenCart 3 теми, които все още използват Bootstrap 3.
+          - Добавено е локализирано заглавие **Галерия / Gallery**.
+          - Запазени са SEO URL, Open Graph, Twitter Cards, JSON-LD, sitemap и related products функционалностите.
+
+          ### Инсталация / обновяване
+          След качване на пакета изпълнете **Extensions → Modifications → Refresh** и изчистете theme/cache при нужда.
+
+          ## English
+
+          **ProBG Blog 1.1.0** is a feature release with a refreshed storefront and an article breadcrumb fix.
+
+          ### Highlights
+          - Fixed article breadcrumb hierarchy: **Home → Blog → Category → Article**.
+          - Redesigned storefront templates using Bootstrap 5 components.
+          - Updated the blog index, category, and article pages.
+          - Updated the latest-articles layout block and built-in blog menu.
+          - Gallery and related products now use responsive Bootstrap 5 card/grid layouts.
+          - Added scoped `probg_blog.css` fallbacks for OpenCart 3 themes that still load Bootstrap 3.
+          - Added localized **Gallery** text.
+          - SEO URLs, Open Graph, Twitter Cards, JSON-LD, sitemap, and related-product functionality are preserved.
+
+          ### Install / upgrade
+          After uploading the package, run **Extensions → Modifications → Refresh** and clear theme/cache if required.
+          EOF
+
+      - name: Commit clean release state
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin refs/tags/1.1.0 >/dev/null 2>&1; then
+            echo 'Tag 1.1.0 already exists; refusing to overwrite it.' >&2
+            exit 1
+          fi
+          if gh release view 1.1.0 >/dev/null 2>&1; then
+            echo 'Release 1.1.0 already exists; refusing to overwrite it.' >&2
+            exit 1
+          fi
+          git config user.name 'Veselin Totev'
+          git config user.email 'v.totev@probg.com'
+          git add dist
+          git rm .github/workflows/release-1.1.0.yml
+          git commit -m 'release: ProBG Blog 1.1.0'
+          git push origin HEAD:main
+
+      - name: Create tag and GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git tag -a 1.1.0 -m 'ProBG Blog 1.1.0'
+          git push origin 1.1.0
+          gh release create 1.1.0 dist/probg-blog-1.1.0.ocmod.zip \
+            --title 'ProBG Blog 1.1.0' \
+            --notes-file /tmp/release-notes.md \
+            --verify-tag
