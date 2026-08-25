@@ -9,6 +9,7 @@
 - Неограничен брой отделни frontend менюта чрез стандартни OpenCart module instances.
 - Коригирани са show/hide настройките и филтърът по категория на статиите.
 - Всеки menu instance има собствено име и може да бъде добавян независимо в **Design → Layouts**.
+- Запазен е отделен системен instance **ProBG Blog - Latest Articles** за досегашния блок с последни статии.
 - Добавени са режими **Списък** и **Слайдър** за статиите.
 - Slider режимът поддържа responsive multi-item layout, навигация, dots, autoplay и touch swipe без външен CDN.
 
@@ -17,6 +18,7 @@
 - Unlimited independent frontend menus implemented as standard OpenCart module instances.
 - Fixed menu show/hide settings and article category filtering.
 - Every menu instance has its own admin name and can be selected independently in **Design → Layouts**.
+- A dedicated **ProBG Blog - Latest Articles** system instance preserves the existing latest-articles layout block.
 - Added **List** and **Slider** article display modes.
 - Slider mode supports responsive multi-item layout, navigation, dots, autoplay and touch swipe without an external CDN.
 

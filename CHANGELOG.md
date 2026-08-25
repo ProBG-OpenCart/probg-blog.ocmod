@@ -11,6 +11,7 @@
 
 - Таб **Меню** вече поддържа неограничен брой отделни менюта.
 - Всяко меню се записва като стандартен OpenCart `module` instance и се появява независимо в **Design → Layouts**.
+- Добавен е системен `ProBG Blog - Latest Articles` instance, за да се запази досегашният блок с последни статии при наличие на menu instances.
 - Всяко меню има собствено административно име, многоезично заглавие, статус, show/hide настройки, категория, лимит и подредба.
 - Добавен е избор **Списък / Слайдър** за статиите.
 - Добавен е собствен responsive article slider без CDN: multi-item desktop, adaptive tablet/mobile, prev/next, dots, autoplay и touch swipe.
@@ -25,6 +26,7 @@
 
 - The **Menu** tab now supports unlimited independent menus.
 - Each menu is stored as a standard OpenCart `module` instance and appears independently in **Design → Layouts**.
+- Added a `ProBG Blog - Latest Articles` system instance to preserve the existing latest-articles layout block when menu instances exist.
 - Each menu has its own admin name, multilingual title, status, visibility settings, category, limit and sorting.
 - Added **List / Slider** article display modes.
 - Added a dependency-free responsive article slider with multi-item desktop layout, adaptive tablet/mobile layout, prev/next controls, dots, autoplay and touch swipe.

@@ -175,6 +175,15 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             return $this->menuModule($setting);
         }
 
+        if (is_array($setting) && isset($setting['probg_blog_type']) && $setting['probg_blog_type'] === 'articles') {
+            if (isset($setting['status']) && !(int)$setting['status']) return '';
+            $limit = max(1, min(100, isset($setting['limit']) ? (int)$setting['limit'] : 4));
+            $data['heading_title'] = $this->language->get('heading_title');
+            $data['blog_url'] = $this->url->link('extension/module/probg_blog','',true);
+            $data['articles'] = $this->articleCards($this->model_extension_probg_blog_blog->getArticles(array('limit'=>$limit)));
+            return $this->load->view('extension/module/probg_blog', $data);
+        }
+
         $mode = $this->config->get('module_probg_blog_layout_output');
         if ($mode === 'menu') {
             return $this->menuModule($this->legacyMenuSettings());

@@ -20,12 +20,12 @@ class ControllerExtensionModuleProbgBlog extends Controller {
 
         if ($this->config->get('module_probg_blog_version') !== '1.3.0') {
             $this->model_extension_module_probg_blog->migrate();
-            $this->ensureLegacyMenuInstance();
+            $this->ensureModuleInstances();
             $settings = $this->model_setting_setting->getSetting('module_probg_blog');
             $settings['module_probg_blog_version'] = '1.3.0';
             $this->model_setting_setting->editSetting('module_probg_blog', $settings);
         } else {
-            $this->ensureLegacyMenuInstance();
+            $this->ensureModuleInstances();
         }
 
         if (($this->request->server['REQUEST_METHOD'] === 'POST') && $this->validate()) {
@@ -44,6 +44,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             unset($post['probg_blog_menus']);
             $menus = $this->syncMenuInstances($menus);
             $this->mirrorLegacyMenuSettings($post, $menus);
+            $post['module_probg_blog_instances_migrated'] = 1;
 
             $post['module_probg_blog_version'] = '1.3.0';
             $this->model_setting_setting->editSetting('module_probg_blog', $post);
@@ -195,7 +196,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $settings['module_probg_blog_menu_sort'] = 'date';
         $settings['module_probg_blog_version'] = '1.3.0';
         $this->model_setting_setting->editSetting('module_probg_blog', $settings);
-        $this->ensureLegacyMenuInstance();
+        $this->ensureModuleInstances();
         $this->grantPermissions();
     }
 
@@ -218,10 +219,11 @@ class ControllerExtensionModuleProbgBlog extends Controller {
 
     public function uninstall() {
         $this->load->model('setting/module');
-        foreach ($this->getMenuInstances() as $menu) {
-            if (!empty($menu['module_id'])) {
-                $this->cleanupLayoutModuleReference((int)$menu['module_id']);
-                $this->model_setting_module->deleteModule((int)$menu['module_id']);
+        foreach ($this->model_setting_module->getModulesByCode('probg_blog') as $module) {
+            $module_id = isset($module['module_id']) ? (int)$module['module_id'] : 0;
+            if ($module_id > 0) {
+                $this->cleanupLayoutModuleReference($module_id);
+                $this->model_setting_module->deleteModule($module_id);
             }
         }
         $this->load->model('extension/module/probg_blog');
@@ -313,36 +315,72 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         return $saved;
     }
 
-    private function ensureLegacyMenuInstance() {
-        if ($this->getMenuInstances()) return;
-
+    private function ensureModuleInstances() {
         $settings = $this->model_setting_setting->getSetting('module_probg_blog');
-        $legacy = array(
-            'name' => 'ProBG Blog Menu',
-            'probg_blog_type' => 'menu',
-            'menu_description' => isset($settings['module_probg_blog_menu_description']) && is_array($settings['module_probg_blog_menu_description']) ? $settings['module_probg_blog_menu_description'] : array(),
-            'show_blog' => isset($settings['module_probg_blog_menu_show_blog']) ? (int)$settings['module_probg_blog_menu_show_blog'] : 1,
-            'show_categories' => isset($settings['module_probg_blog_menu_show_categories']) ? (int)$settings['module_probg_blog_menu_show_categories'] : 1,
-            'show_articles' => isset($settings['module_probg_blog_menu_show_articles']) ? (int)$settings['module_probg_blog_menu_show_articles'] : 1,
-            'category_id' => isset($settings['module_probg_blog_menu_category_id']) ? (int)$settings['module_probg_blog_menu_category_id'] : 0,
-            'limit' => isset($settings['module_probg_blog_menu_limit']) ? (int)$settings['module_probg_blog_menu_limit'] : 10,
-            'sort' => isset($settings['module_probg_blog_menu_sort']) ? $settings['module_probg_blog_menu_sort'] : 'date',
-            'display' => 'list',
-            'slider_items' => 3,
-            'slider_autoplay' => 1,
-            'slider_interval' => 5000,
-            'status' => 1
-        );
-        $legacy = $this->normalizeMenu($legacy);
-        unset($legacy['module_id']);
-        $this->model_setting_module->addModule('probg_blog', $legacy);
-        $module_id = (int)$this->db->getLastId();
+        $article_module_id = 0;
+        $menu_module_id = 0;
 
-        if ($module_id > 0 && isset($settings['module_probg_blog_layout_output']) && $settings['module_probg_blog_layout_output'] === 'menu') {
-            $column = $this->layoutModuleColumn();
-            if ($column !== '') {
-                $this->db->query("UPDATE `" . DB_PREFIX . "layout_module` SET `" . $column . "`='probg_blog." . $module_id . "' WHERE `" . $column . "`='probg_blog'");
+        foreach ($this->model_setting_module->getModulesByCode('probg_blog') as $module) {
+            $module_id = isset($module['module_id']) ? (int)$module['module_id'] : 0;
+            $module_setting = isset($module['setting']) ? json_decode($module['setting'], true) : array();
+            if (!is_array($module_setting)) $module_setting = array();
+
+            if (!$article_module_id && isset($module_setting['probg_blog_type']) && $module_setting['probg_blog_type'] === 'articles') {
+                $article_module_id = $module_id;
             }
+            if (!$menu_module_id && isset($module_setting['probg_blog_type']) && $module_setting['probg_blog_type'] === 'menu') {
+                $menu_module_id = $module_id;
+            }
+        }
+
+        if (!$article_module_id) {
+            $this->model_setting_module->addModule('probg_blog', array(
+                'name' => 'ProBG Blog - Latest Articles',
+                'probg_blog_type' => 'articles',
+                'limit' => 4,
+                'status' => 1
+            ));
+            $article_module_id = (int)$this->db->getLastId();
+        }
+
+        $migrated = !empty($settings['module_probg_blog_instances_migrated']);
+        if (!$migrated) {
+            if (!$menu_module_id) {
+                $legacy = array(
+                    'name' => 'ProBG Blog Menu',
+                    'probg_blog_type' => 'menu',
+                    'menu_description' => isset($settings['module_probg_blog_menu_description']) && is_array($settings['module_probg_blog_menu_description']) ? $settings['module_probg_blog_menu_description'] : array(),
+                    'show_blog' => isset($settings['module_probg_blog_menu_show_blog']) ? (int)$settings['module_probg_blog_menu_show_blog'] : 1,
+                    'show_categories' => isset($settings['module_probg_blog_menu_show_categories']) ? (int)$settings['module_probg_blog_menu_show_categories'] : 1,
+                    'show_articles' => isset($settings['module_probg_blog_menu_show_articles']) ? (int)$settings['module_probg_blog_menu_show_articles'] : 1,
+                    'category_id' => isset($settings['module_probg_blog_menu_category_id']) ? (int)$settings['module_probg_blog_menu_category_id'] : 0,
+                    'limit' => isset($settings['module_probg_blog_menu_limit']) ? (int)$settings['module_probg_blog_menu_limit'] : 10,
+                    'sort' => isset($settings['module_probg_blog_menu_sort']) ? $settings['module_probg_blog_menu_sort'] : 'date',
+                    'display' => 'list',
+                    'slider_items' => 3,
+                    'slider_autoplay' => 1,
+                    'slider_interval' => 5000,
+                    'status' => 1
+                );
+                $legacy = $this->normalizeMenu($legacy);
+                unset($legacy['module_id']);
+                $this->model_setting_module->addModule('probg_blog', $legacy);
+                $menu_module_id = (int)$this->db->getLastId();
+            }
+
+            $target_module_id = isset($settings['module_probg_blog_layout_output']) && $settings['module_probg_blog_layout_output'] === 'menu'
+                ? $menu_module_id
+                : $article_module_id;
+
+            if ($target_module_id > 0) {
+                $column = $this->layoutModuleColumn();
+                if ($column !== '') {
+                    $this->db->query("UPDATE `" . DB_PREFIX . "layout_module` SET `" . $column . "`='probg_blog." . (int)$target_module_id . "' WHERE `" . $column . "`='probg_blog'");
+                }
+            }
+
+            $settings['module_probg_blog_instances_migrated'] = 1;
+            $this->model_setting_setting->editSetting('module_probg_blog', $settings);
         }
     }
 
