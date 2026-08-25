@@ -22,3 +22,4 @@
 - 1.1.0 — redesigned all storefront blog templates with Bootstrap 5 components, added scoped Bootstrap 5-compatible styles/fallbacks, and fixed the missing category breadcrumb link on article pages.
 - 1.1.1 — fixed recursive full-page rendering when ProBG Blog is assigned to an OpenCart layout; layout calls now render only Menu/Latest Articles and include a request-level recursion guard.
 - 1.2.0 — added a Fancybox-style article gallery lightbox using OpenCart 3's bundled Magnific Popup, with previous/next navigation, image counter, keyboard controls, responsive styling and graceful fallback to direct image links.
+- 1.2.1 — source-level layout detection and static recursion guard prevent memory exhaustion when ProBG Blog is assigned to layouts.

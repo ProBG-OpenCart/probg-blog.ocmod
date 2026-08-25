@@ -14,17 +14,17 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $is_blog_request = ($route === 'extension/module/probg_blog' || $category_id > 0 || $article_id > 0);
 
         if (!$is_blog_request || self::$full_page_rendering) {
-    return $this->module(is_array($setting) ? $setting : array());
+            return $this->module(is_array($setting) ? $setting : array());
         }
 
         self::$full_page_rendering = true;
 
         if ($article_id) {
-    $output = $this->article($article_id, $category_id);
+            $output = $this->article($article_id, $category_id);
         } elseif ($category_id) {
-    $output = $this->category($category_id);
+            $output = $this->category($category_id);
         } else {
-    $output = $this->listing();
+            $output = $this->listing();
         }
 
         self::$full_page_rendering = false;
