@@ -32,10 +32,14 @@ jobs:
           end = text.index(end_marker, start)
           body = text[start:end]
           lines = []
+          in_triple = False
           for line in body.splitlines():
-              if line.startswith('          '):
+              quote_count = line.count("'''")
+              if not in_triple and line.startswith('          '):
                   line = line[10:]
               lines.append(line)
+              if quote_count % 2 == 1:
+                  in_triple = not in_triple
           Path('/tmp/probg-blog-1.3.0.py').write_text('\n'.join(lines) + '\n')
           PY
           python3 /tmp/probg-blog-1.3.0.py
