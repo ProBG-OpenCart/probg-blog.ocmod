@@ -1,0 +1,204 @@
+name: Fix ProBG Blog 1.2.1 layout recursion
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    if: github.event.pull_request.head.ref == 'fix/1.2.1-layout-recursion-source'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout fix branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/1.2.1-layout-recursion-source
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply source-level recursion fix
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          controller = Path('upload/catalog/controller/extension/module/probg_blog.php')
+          text = controller.read_text()
+          pattern = re.compile(r"class ControllerExtensionModuleProbgBlog extends Controller \{\n    public function index\(\$setting=array\(\)\) \{.*?\n    \}\n\n    private function listing\(\)", re.S)
+          replacement = '''class ControllerExtensionModuleProbgBlog extends Controller {
+    private static $full_page_rendering = false;
+
+    public function index($setting=array()) {
+        if (!$this->config->get('module_probg_blog_status')) return '';
+        $this->load->language('extension/module/probg_blog');
+        $this->load->model('extension/probg_blog/blog');
+        $this->load->model('tool/image');
+
+        $category_id = isset($this->request->get['probg_blog_category_id']) ? (int)$this->request->get['probg_blog_category_id'] : 0;
+        $article_id = isset($this->request->get['probg_blog_article_id']) ? (int)$this->request->get['probg_blog_article_id'] : 0;
+        $route = isset($this->request->get['route']) ? (string)$this->request->get['route'] : '';
+        $is_blog_request = ($route === 'extension/module/probg_blog' || $category_id > 0 || $article_id > 0);
+
+        // OpenCart 3 can call a module assigned in Design > Layouts without a
+        // $setting array. Any non-blog request must render only the configured
+        // module block and must never enter the full blog page renderer.
+        if (!$is_blog_request || self::$full_page_rendering) {
+            return $this->module(is_array($setting) ? $setting : array());
+        }
+
+        // Set the guard before layoutData() can load content_top/content_bottom.
+        // Nested ProBG Blog calls in those layout positions will render only the
+        // module block instead of recursively rendering the full blog page.
+        self::$full_page_rendering = true;
+
+        if ($article_id) {
+            $output = $this->article($article_id, $category_id);
+        } elseif ($category_id) {
+            $output = $this->category($category_id);
+        } else {
+            $output = $this->listing();
+        }
+
+        self::$full_page_rendering = false;
+        return $output;
+    }
+
+    private function listing()'''
+          text, count = pattern.subn(replacement, text, count=1)
+          if count != 1:
+              raise SystemExit('Could not replace ProBG Blog index() source block')
+          controller.write_text(text)
+
+          install = Path('install.xml')
+          xml = install.read_text()
+          xml = xml.replace('<version>1.2.0</version>', '<version>1.2.1</version>', 1)
+          xml = xml.replace("$data['stage'] = '21';", "$data['stage'] = '22';")
+          xml = xml.replace("$data['version'] = '1.2.0';", "$data['version'] = '1.2.1';")
+
+          marker = "      <search><![CDATA[if ($setting && !isset($this->request->get['probg_blog_category_id']) && !isset($this->request->get['probg_blog_article_id'])) {"
+          pos = xml.find(marker)
+          if pos != -1:
+              op_start = xml.rfind('    <operation error="skip">', 0, pos)
+              op_end = xml.find('    </operation>', pos)
+              if op_start == -1 or op_end == -1:
+                  raise SystemExit('Could not locate obsolete recursion OCMOD operation')
+              op_end += len('    </operation>')
+              xml = xml[:op_start] + xml[op_end:]
+          install.write_text(xml)
+
+          bg = Path('upload/admin/language/bg-bg/extension/module/probg_blog.php')
+          bg_text = bg.read_text().replace(
+              "Версия 1.2.0 добавя lightbox галерия за допълнителните изображения в статия с Magnific Popup, навигация, брояч и responsive оформление.",
+              "Версия 1.2.1 коригира рекурсивното зареждане и memory exhaustion при добавяне на ProBG Blog менюто или блока със статии в OpenCart layout, включително на началната страница."
+          )
+          bg.write_text(bg_text)
+
+          en = Path('upload/admin/language/en-gb/extension/module/probg_blog.php')
+          en_text = en.read_text().replace(
+              "Version 1.2.0 adds a lightbox gallery for additional article images using Magnific Popup with navigation, counter and responsive styling.",
+              "Version 1.2.1 fixes recursive rendering and memory exhaustion when the ProBG Blog menu or article block is assigned to an OpenCart layout, including the home page."
+          )
+          en.write_text(en_text)
+
+          stages = Path('docs/STAGES.md')
+          stages_text = stages.read_text()
+          line = "- 1.2.1 — moved layout/full-page detection into the catalog controller source and added a static request-level recursion guard, preventing memory exhaustion when ProBG Blog is assigned to layouts.\n"
+          if line not in stages_text:
+              stages.write_text(stages_text.rstrip() + '\n' + line)
+
+          changelog = Path('CHANGELOG.md')
+          cl = changelog.read_text()
+          entry = '''# Changelog
+
+## [1.2.1] - 2026-08-25
+
+### fix — Български
+
+- Коригирано е критично рекурсивно зареждане при добавяне на ProBG Blog **Меню** или **Последни статии** в `Design → Layouts`, включително на началната страница.
+- Причината за `Allowed memory size exhausted` е, че source controller-ът все още съдържаше старата логика и разчиташе на OCMOD patch за разграничаване на layout invocation от директна blog страница.
+- Логиката вече е част директно от `catalog/controller/extension/module/probg_blog.php`.
+- Всеки non-blog request рендерира само module output и никога не стартира пълния `listing()` renderer.
+- Добавен е статичен request-level guard, който блокира повторно full-page рендериране при вложени layout позиции.
+- Премахнат е старият OCMOD workaround за recursion detection, за да няма две конкуриращи се реализации.
+
+### fix — English
+
+- Fixed critical recursive rendering when the ProBG Blog **Menu** or **Latest Articles** output is assigned in `Design → Layouts`, including the home page.
+- The `Allowed memory size exhausted` error occurred because the source controller still contained the legacy logic and depended on an OCMOD patch to distinguish layout invocations from direct blog pages.
+- Layout/full-page detection now lives directly in `catalog/controller/extension/module/probg_blog.php`.
+- Every non-blog request renders only the module output and never enters the full `listing()` renderer.
+- Added a static request-level guard that prevents nested layout positions from starting another full-page render.
+- Removed the obsolete OCMOD recursion-detection workaround to keep a single implementation.
+
+'''
+          if '## [1.2.1]' not in cl:
+              changelog.write_text(entry + cl[len('# Changelog\n\n'):])
+
+          Path('docs/1.2.1.md').write_text('''# ProBG Blog 1.2.1
+
+## Български
+
+Версия 1.2.1 коригира критичен проблем при поставяне на ProBG Blog в OpenCart **Design → Layouts**. На реална инсталация началната страница можеше да влезе в рекурсивно зареждане и PHP да завърши с `Allowed memory size exhausted`.
+
+### Причина
+
+Source controller-ът запазваше старата логика, която третира извикване без `$setting` като директно отваряне на блог секцията. OpenCart 3 може да зареди module route от layout без `$setting`, затова контролерът стартираше пълния `listing()` renderer, който зарежда `content_top` / `content_bottom` и отново същия layout module.
+
+### Корекция
+
+- Разграничаването между директна blog страница и layout module е преместено директно в catalog controller source.
+- Non-blog routes винаги рендерират само module output.
+- Добавен е static request-level guard преди зареждане на layout позициите.
+- Nested ProBG Blog invocation никога не стартира втори full-page render.
+- Премахнат е старият OCMOD workaround за същата логика.
+
+След обновяване изпълнете **Extensions → Modifications → Refresh** и изчистете theme/cache.
+
+## English
+
+Version 1.2.1 fixes a critical recursion issue when ProBG Blog is assigned through OpenCart **Design → Layouts**. On a real installation the home page could recursively render the module until PHP terminated with `Allowed memory size exhausted`.
+
+### Root cause
+
+The source controller still used the legacy `$setting`-based detection. OpenCart 3 can invoke a layout module without passing `$setting`, causing the controller to enter the full `listing()` renderer, which loads `content_top` / `content_bottom` and invokes the same module again.
+
+### Fix
+
+- Direct-page vs layout-module detection now lives in the catalog controller source.
+- Non-blog routes always render module output only.
+- Added a static request-level recursion guard before layout positions are loaded.
+- Nested ProBG Blog calls cannot start another full-page render.
+- Removed the obsolete OCMOD workaround for this logic.
+
+After updating, run **Extensions → Modifications → Refresh** and clear theme/cache.
+''')
+
+      - name: Validate
+        run: |
+          php -l upload/catalog/controller/extension/module/probg_blog.php
+          php -r '$x=simplexml_load_file("install.xml"); if (!$x || (string)$x->version !== "1.2.1") { exit(1); }'
+          grep -q "private static \$full_page_rendering = false;" upload/catalog/controller/extension/module/probg_blog.php
+          ! grep -q "if (\$setting && !isset(\$this->request->get\['probg_blog_category_id'\])" install.xml
+
+      - name: Commit fix branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add upload/catalog/controller/extension/module/probg_blog.php install.xml upload/admin/language/bg-bg/extension/module/probg_blog.php upload/admin/language/en-gb/extension/module/probg_blog.php CHANGELOG.md docs/STAGES.md docs/1.2.1.md
+          git commit -m "fix: prevent layout recursion in source controller (1.2.1)"
+          git push origin HEAD:fix/1.2.1-layout-recursion-source
+
+      - name: Remove one-off workflow from main
+        if: always()
+        run: |
+          git fetch origin main
+          git checkout main
+          if [ -f .github/workflows/fix-1.2.1-layout-recursion.yml ]; then
+            git rm .github/workflows/fix-1.2.1-layout-recursion.yml
+            git commit -m "chore: remove one-off 1.2.1 fix workflow"
+            git push origin main
+          fi
