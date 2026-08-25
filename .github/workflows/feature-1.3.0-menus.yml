@@ -1,0 +1,836 @@
+name: Build ProBG Blog 1.3.0 multiple menus
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+
+jobs:
+  implement:
+    if: github.event.pull_request.head.ref == 'feat/1.3.0-multiple-menus-slider'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/1.3.0-multiple-menus-slider
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Implement 1.3.0
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          # ------------------------------------------------------------------
+          # Admin controller: standard OpenCart module instances for menus.
+          # ------------------------------------------------------------------
+          p = Path('upload/admin/controller/extension/module/probg_blog.php')
+          s = p.read_text()
+          s = s.replace("$this->load->model('setting/setting');\n        $this->load->model('extension/module/probg_blog');", "$this->load->model('setting/setting');\n        $this->load->model('setting/module');\n        $this->load->model('extension/module/probg_blog');", 1)
+
+          migration_pattern = re.compile(r"        if \(\$this->config->get\('module_probg_blog_version'\) !== '1\.0\.5'\) \{.*?\n        \}\n\n        if \(\(\$this->request->server\['REQUEST_METHOD'\] === 'POST'\)", re.S)
+          migration_replacement = '''        if ($this->config->get('module_probg_blog_version') !== '1.3.0') {
+            $this->model_extension_module_probg_blog->migrate();
+            $this->ensureLegacyMenuInstance();
+            $settings = $this->model_setting_setting->getSetting('module_probg_blog');
+            $settings['module_probg_blog_version'] = '1.3.0';
+            $this->model_setting_setting->editSetting('module_probg_blog', $settings);
+        } else {
+            $this->ensureLegacyMenuInstance();
+        }
+
+        if (($this->request->server['REQUEST_METHOD'] === 'POST')'''
+          s, n = migration_pattern.subn(migration_replacement, s, count=1)
+          if n != 1:
+              raise SystemExit('Admin migration block not found')
+
+          old_post = '''                unset($description);
+            }
+
+            $post['module_probg_blog_version'] = '1.0.5';
+            $this->model_setting_setting->editSetting('module_probg_blog', $post);'''
+          new_post = '''                unset($description);
+            }
+
+            $menus = isset($post['probg_blog_menus']) && is_array($post['probg_blog_menus']) ? $post['probg_blog_menus'] : array();
+            unset($post['probg_blog_menus']);
+            $menus = $this->syncMenuInstances($menus);
+            $this->mirrorLegacyMenuSettings($post, $menus);
+
+            $post['module_probg_blog_version'] = '1.3.0';
+            $this->model_setting_setting->editSetting('module_probg_blog', $post);'''
+          if old_post not in s:
+              raise SystemExit('Admin POST version block not found')
+          s = s.replace(old_post, new_post, 1)
+
+          s = s.replace("            'text_layout_articles', 'text_layout_menu', 'text_all_categories',", "            'text_layout_articles', 'text_layout_menu', 'text_all_categories', 'text_menu_list', 'text_menu_slider',", 1)
+          s = s.replace("            'entry_menu_show_articles', 'entry_menu_category', 'entry_menu_limit', 'entry_menu_sort',", "            'entry_menu_show_articles', 'entry_menu_category', 'entry_menu_limit', 'entry_menu_sort', 'entry_menu_name', 'entry_menu_status',\n            'entry_menu_display', 'entry_slider_items', 'entry_slider_autoplay', 'entry_slider_interval',", 1)
+          s = s.replace("            'help_seo_keyword', 'help_layout_output', 'help_menu_category', 'button_save', 'button_cancel',", "            'help_seo_keyword', 'help_layout_output', 'help_menu_category', 'help_multiple_menus', 'help_slider_items', 'button_save', 'button_cancel',\n            'button_add_menu', 'button_remove_menu',", 1)
+
+          s = s.replace("        $data['error_menu_limit'] = isset($this->error['menu_limit']) ? $this->error['menu_limit'] : '';", "        $data['error_menu_limit'] = isset($this->error['menu_limit']) ? $this->error['menu_limit'] : array();\n        $data['error_menu_name'] = isset($this->error['menu_name']) ? $this->error['menu_name'] : array();\n        $data['error_slider_items'] = isset($this->error['slider_items']) ? $this->error['slider_items'] : array();\n        $data['error_slider_interval'] = isset($this->error['slider_interval']) ? $this->error['slider_interval'] : array();", 1)
+          s = s.replace("        $data['error_menu_title'] = isset($this->error['menu_title']) ? $this->error['menu_title'] : array();", "        $data['error_menu_title'] = isset($this->error['menu_title']) ? $this->error['menu_title'] : array();", 1)
+          s = s.replace("        $data['stage'] = '17';\n        $data['version'] = '1.0.5';", "        $data['stage'] = '23';\n        $data['version'] = '1.3.0';", 1)
+
+          menu_desc_pattern = re.compile(r"\n        if \(isset\(\$this->request->post\['module_probg_blog_menu_description'\]\)\) \{.*?\n        \$data\['module_probg_blog_menu_description'\] = \$menu_descriptions;\n", re.S)
+          s, n = menu_desc_pattern.subn('\n', s, count=1)
+          if n != 1:
+              raise SystemExit('Legacy menu description data block not found')
+
+          marker = "        $data['menu_categories'] = $this->model_extension_probg_blog_category->getCategories(array('sort' => 'cd.title', 'order' => 'ASC'));"
+          insert = marker + '''
+
+        $menu_rows = isset($this->request->post['probg_blog_menus']) && is_array($this->request->post['probg_blog_menus'])
+            ? $this->request->post['probg_blog_menus']
+            : $this->getMenuInstances();
+        $data['probg_blog_menus'] = array();
+        foreach ($menu_rows as $row => $menu) {
+            $module_id = isset($menu['module_id']) ? (int)$menu['module_id'] : 0;
+            $data['probg_blog_menus'][] = $this->normalizeMenu($menu, $module_id);
+        }'''
+          if marker not in s:
+              raise SystemExit('menu_categories marker not found')
+          s = s.replace(marker, insert, 1)
+
+          install_pattern = re.compile(r"    public function install\(\) \{.*?\n    \}\n\n    private function grantPermissions", re.S)
+          install_replacement = '''    public function install() {
+        $this->load->model('extension/module/probg_blog');
+        $this->model_extension_module_probg_blog->install();
+        $this->load->model('setting/setting');
+        $this->load->model('setting/module');
+        $settings = $this->model_setting_setting->getSetting('module_probg_blog');
+        $settings['module_probg_blog_layout_output'] = 'articles';
+        $settings['module_probg_blog_menu_description'] = array();
+        $settings['module_probg_blog_menu_show_blog'] = 1;
+        $settings['module_probg_blog_menu_show_categories'] = 1;
+        $settings['module_probg_blog_menu_show_articles'] = 1;
+        $settings['module_probg_blog_menu_category_id'] = 0;
+        $settings['module_probg_blog_menu_limit'] = 10;
+        $settings['module_probg_blog_menu_sort'] = 'date';
+        $settings['module_probg_blog_version'] = '1.3.0';
+        $this->model_setting_setting->editSetting('module_probg_blog', $settings);
+        $this->ensureLegacyMenuInstance();
+        $this->grantPermissions();
+    }
+
+    private function grantPermissions'''
+          s, n = install_pattern.subn(install_replacement, s, count=1)
+          if n != 1:
+              raise SystemExit('install method block not found')
+
+          uninstall_pattern = re.compile(r"    public function uninstall\(\) \{.*?\n    \}\n\n    protected function validate", re.S)
+          helpers_and_validate = '''    public function uninstall() {
+        $this->load->model('setting/module');
+        foreach ($this->getMenuInstances() as $menu) {
+            if (!empty($menu['module_id'])) {
+                $this->cleanupLayoutModuleReference((int)$menu['module_id']);
+                $this->model_setting_module->deleteModule((int)$menu['module_id']);
+            }
+        }
+        $this->load->model('extension/module/probg_blog');
+        $this->model_extension_module_probg_blog->uninstall();
+    }
+
+    private function getMenuInstances() {
+        $menus = array();
+        foreach ($this->model_setting_module->getModulesByCode('probg_blog') as $row) {
+            $setting = json_decode($row['setting'], true);
+            if (!is_array($setting) || !isset($setting['probg_blog_type']) || $setting['probg_blog_type'] !== 'menu') {
+                continue;
+            }
+            $menus[] = $this->normalizeMenu($setting, (int)$row['module_id']);
+        }
+        return $menus;
+    }
+
+    private function normalizeMenu($menu, $module_id = 0) {
+        $defaults = array(
+            'name' => 'ProBG Blog Menu',
+            'probg_blog_type' => 'menu',
+            'menu_description' => array(),
+            'show_blog' => 1,
+            'show_categories' => 1,
+            'show_articles' => 1,
+            'category_id' => 0,
+            'limit' => 10,
+            'sort' => 'date',
+            'display' => 'list',
+            'slider_items' => 3,
+            'slider_autoplay' => 1,
+            'slider_interval' => 5000,
+            'status' => 1
+        );
+
+        $menu = array_merge($defaults, is_array($menu) ? $menu : array());
+        $menu['module_id'] = $module_id ?: (isset($menu['module_id']) ? (int)$menu['module_id'] : 0);
+        $menu['name'] = trim((string)$menu['name']);
+        if ($menu['name'] === '') $menu['name'] = 'ProBG Blog Menu';
+        $menu['probg_blog_type'] = 'menu';
+        $menu['menu_description'] = is_array($menu['menu_description']) ? $menu['menu_description'] : array();
+        $menu['show_blog'] = !empty($menu['show_blog']) ? 1 : 0;
+        $menu['show_categories'] = !empty($menu['show_categories']) ? 1 : 0;
+        $menu['show_articles'] = !empty($menu['show_articles']) ? 1 : 0;
+        $menu['category_id'] = max(0, (int)$menu['category_id']);
+        $menu['limit'] = max(1, min(100, (int)$menu['limit']));
+        $menu['sort'] = $menu['sort'] === 'sort_order' ? 'sort_order' : 'date';
+        $menu['display'] = $menu['display'] === 'slider' ? 'slider' : 'list';
+        $menu['slider_items'] = max(1, min(6, (int)$menu['slider_items']));
+        $menu['slider_autoplay'] = !empty($menu['slider_autoplay']) ? 1 : 0;
+        $menu['slider_interval'] = max(1000, min(30000, (int)$menu['slider_interval']));
+        $menu['status'] = !empty($menu['status']) ? 1 : 0;
+        return $menu;
+    }
+
+    private function syncMenuInstances($menus) {
+        $existing = array();
+        foreach ($this->getMenuInstances() as $menu) {
+            $existing[(int)$menu['module_id']] = $menu;
+        }
+
+        $keep = array();
+        $saved = array();
+        foreach ((array)$menus as $menu) {
+            $module_id = isset($menu['module_id']) ? (int)$menu['module_id'] : 0;
+            $normalized = $this->normalizeMenu($menu, $module_id);
+            $data = $normalized;
+            unset($data['module_id']);
+
+            if ($module_id > 0 && isset($existing[$module_id])) {
+                $this->model_setting_module->editModule($module_id, $data);
+            } else {
+                $this->model_setting_module->addModule('probg_blog', $data);
+                $module_id = (int)$this->db->getLastId();
+                $normalized['module_id'] = $module_id;
+            }
+
+            if ($module_id > 0) $keep[$module_id] = true;
+            $saved[] = $normalized;
+        }
+
+        foreach ($existing as $module_id => $menu) {
+            if (!isset($keep[$module_id])) {
+                $this->cleanupLayoutModuleReference($module_id);
+                $this->model_setting_module->deleteModule($module_id);
+            }
+        }
+        return $saved;
+    }
+
+    private function ensureLegacyMenuInstance() {
+        if ($this->getMenuInstances()) return;
+
+        $settings = $this->model_setting_setting->getSetting('module_probg_blog');
+        $legacy = array(
+            'name' => 'ProBG Blog Menu',
+            'probg_blog_type' => 'menu',
+            'menu_description' => isset($settings['module_probg_blog_menu_description']) && is_array($settings['module_probg_blog_menu_description']) ? $settings['module_probg_blog_menu_description'] : array(),
+            'show_blog' => isset($settings['module_probg_blog_menu_show_blog']) ? (int)$settings['module_probg_blog_menu_show_blog'] : 1,
+            'show_categories' => isset($settings['module_probg_blog_menu_show_categories']) ? (int)$settings['module_probg_blog_menu_show_categories'] : 1,
+            'show_articles' => isset($settings['module_probg_blog_menu_show_articles']) ? (int)$settings['module_probg_blog_menu_show_articles'] : 1,
+            'category_id' => isset($settings['module_probg_blog_menu_category_id']) ? (int)$settings['module_probg_blog_menu_category_id'] : 0,
+            'limit' => isset($settings['module_probg_blog_menu_limit']) ? (int)$settings['module_probg_blog_menu_limit'] : 10,
+            'sort' => isset($settings['module_probg_blog_menu_sort']) ? $settings['module_probg_blog_menu_sort'] : 'date',
+            'display' => 'list',
+            'slider_items' => 3,
+            'slider_autoplay' => 1,
+            'slider_interval' => 5000,
+            'status' => 1
+        );
+        $legacy = $this->normalizeMenu($legacy);
+        unset($legacy['module_id']);
+        $this->model_setting_module->addModule('probg_blog', $legacy);
+        $module_id = (int)$this->db->getLastId();
+
+        if ($module_id > 0 && isset($settings['module_probg_blog_layout_output']) && $settings['module_probg_blog_layout_output'] === 'menu') {
+            $column = $this->layoutModuleColumn();
+            if ($column !== '') {
+                $this->db->query("UPDATE `" . DB_PREFIX . "layout_module` SET `" . $column . "`='probg_blog." . $module_id . "' WHERE `" . $column . "`='probg_blog'");
+            }
+        }
+    }
+
+    private function mirrorLegacyMenuSettings(&$post, $menus) {
+        if ($menus) {
+            $first = $this->normalizeMenu(reset($menus), isset($menus[0]['module_id']) ? (int)$menus[0]['module_id'] : 0);
+            $post['module_probg_blog_menu_description'] = $first['menu_description'];
+            $post['module_probg_blog_menu_show_blog'] = $first['show_blog'];
+            $post['module_probg_blog_menu_show_categories'] = $first['show_categories'];
+            $post['module_probg_blog_menu_show_articles'] = $first['show_articles'];
+            $post['module_probg_blog_menu_category_id'] = $first['category_id'];
+            $post['module_probg_blog_menu_limit'] = $first['limit'];
+            $post['module_probg_blog_menu_sort'] = $first['sort'];
+        } else {
+            $post['module_probg_blog_menu_description'] = array();
+            $post['module_probg_blog_menu_show_blog'] = 0;
+            $post['module_probg_blog_menu_show_categories'] = 0;
+            $post['module_probg_blog_menu_show_articles'] = 0;
+            $post['module_probg_blog_menu_category_id'] = 0;
+            $post['module_probg_blog_menu_limit'] = 10;
+            $post['module_probg_blog_menu_sort'] = 'date';
+        }
+    }
+
+    private function cleanupLayoutModuleReference($module_id) {
+        $column = $this->layoutModuleColumn();
+        if ($column !== '') {
+            $this->db->query("DELETE FROM `" . DB_PREFIX . "layout_module` WHERE `" . $column . "`='probg_blog." . (int)$module_id . "'");
+        }
+    }
+
+    private function layoutModuleColumn() {
+        $code = $this->db->query("SHOW COLUMNS FROM `" . DB_PREFIX . "layout_module` LIKE 'code'");
+        if ($code->num_rows) return 'code';
+        $module = $this->db->query("SHOW COLUMNS FROM `" . DB_PREFIX . "layout_module` LIKE 'module'");
+        return $module->num_rows ? 'module' : '';
+    }
+
+    protected function validate'''
+          s, n = uninstall_pattern.subn(helpers_and_validate, s, count=1)
+          if n != 1:
+              raise SystemExit('uninstall/validate boundary not found')
+
+          validate_pattern = re.compile(r"    protected function validate\(\) \{.*?\n    \}\n\}", re.S)
+          validate_replacement = '''    protected function validate() {
+        if (!$this->user->hasPermission('modify', 'extension/module/probg_blog')) {
+            $this->error['warning'] = $this->language->get('error_permission');
+        }
+
+        $descriptions = isset($this->request->post['module_probg_blog_description']) ? $this->request->post['module_probg_blog_description'] : array();
+        $menus = isset($this->request->post['probg_blog_menus']) && is_array($this->request->post['probg_blog_menus']) ? $this->request->post['probg_blog_menus'] : array();
+        $this->load->model('localisation/language');
+        $languages = $this->model_localisation_language->getLanguages();
+
+        foreach ($languages as $language) {
+            $language_id = (int)$language['language_id'];
+            $value = isset($descriptions[$language_id]) ? $descriptions[$language_id] : array();
+            if (isset($value['title']) && utf8_strlen($value['title']) > 255) {
+                $this->error['title'][$language_id] = $this->language->get('error_title');
+            }
+            $keyword = isset($value['seo_keyword']) ? trim($value['seo_keyword']) : '';
+            if ($keyword !== '' && !preg_match('/^[A-Za-z0-9_-]+$/', $keyword)) {
+                $this->error['seo_keyword'][$language_id] = $this->language->get('error_seo_keyword');
+            }
+        }
+
+        foreach ($menus as $row => $menu) {
+            $name = isset($menu['name']) ? trim($menu['name']) : '';
+            if ($name === '' || utf8_strlen($name) > 64) {
+                $this->error['menu_name'][$row] = $this->language->get('error_menu_name');
+            }
+            foreach ($languages as $language) {
+                $language_id = (int)$language['language_id'];
+                $title = isset($menu['menu_description'][$language_id]['title']) ? $menu['menu_description'][$language_id]['title'] : '';
+                if (utf8_strlen($title) > 255) {
+                    $this->error['menu_title'][$row][$language_id] = $this->language->get('error_menu_title');
+                }
+            }
+            $menu_limit = isset($menu['limit']) ? (int)$menu['limit'] : 0;
+            if ($menu_limit < 1 || $menu_limit > 100) {
+                $this->error['menu_limit'][$row] = $this->language->get('error_menu_limit');
+            }
+            $slider_items = isset($menu['slider_items']) ? (int)$menu['slider_items'] : 0;
+            if ($slider_items < 1 || $slider_items > 6) {
+                $this->error['slider_items'][$row] = $this->language->get('error_slider_items');
+            }
+            $slider_interval = isset($menu['slider_interval']) ? (int)$menu['slider_interval'] : 0;
+            if ($slider_interval < 1000 || $slider_interval > 30000) {
+                $this->error['slider_interval'][$row] = $this->language->get('error_slider_interval');
+            }
+        }
+
+        $limit = isset($this->request->post['module_probg_blog_limit']) ? (int)$this->request->post['module_probg_blog_limit'] : 0;
+        if ($limit < 1 || $limit > 100) {
+            $this->error['limit'] = $this->language->get('error_limit');
+        }
+
+        foreach (array('module_probg_blog_image_list_width','module_probg_blog_image_list_height','module_probg_blog_image_article_width','module_probg_blog_image_article_height','module_probg_blog_image_gallery_width','module_probg_blog_image_gallery_height') as $key) {
+            if (empty($this->request->post[$key]) || (int)$this->request->post[$key] < 1) {
+                $this->error['image'] = $this->language->get('error_image');
+            }
+        }
+
+        return !$this->error;
+    }
+}'''
+          s, n = validate_pattern.subn(validate_replacement, s, count=1)
+          if n != 1:
+              raise SystemExit('validate method not found')
+          p.write_text(s)
+
+          # ------------------------------------------------------------------
+          # Admin model version markers.
+          # ------------------------------------------------------------------
+          p = Path('upload/admin/model/extension/module/probg_blog.php')
+          s = p.read_text()
+          s = s.replace("'module_probg_blog_version'=>'1.0.4'", "'module_probg_blog_version'=>'1.3.0'")
+          s = s.replace("$settings['module_probg_blog_version'] = '1.0.4';", "$settings['module_probg_blog_version'] = '1.3.0';")
+          p.write_text(s)
+
+          # ------------------------------------------------------------------
+          # Catalog controller: instance settings + slider data.
+          # ------------------------------------------------------------------
+          p = Path('upload/catalog/controller/extension/module/probg_blog.php')
+          s = p.read_text()
+          s = s.replace("    private static $full_page_rendering = false;", "    private static $full_page_rendering = false;\n    private static $menu_counter = 0;", 1)
+          method_pattern = re.compile(r"    private function module\(\$setting\) \{.*?\n    \}\n\n    private function articleCards", re.S)
+          method_replacement = '''    private function module($setting) {
+        if (is_array($setting) && isset($setting['probg_blog_type']) && $setting['probg_blog_type'] === 'menu') {
+            if (isset($setting['status']) && !(int)$setting['status']) return '';
+            return $this->menuModule($setting);
+        }
+
+        $mode = $this->config->get('module_probg_blog_layout_output');
+        if ($mode === 'menu') {
+            return $this->menuModule($this->legacyMenuSettings());
+        }
+
+        $data['heading_title'] = $this->language->get('heading_title');
+        $data['blog_url'] = $this->url->link('extension/module/probg_blog','',true);
+        $data['articles'] = $this->articleCards($this->model_extension_probg_blog_blog->getArticles(array('limit'=>4)));
+        return $this->load->view('extension/module/probg_blog', $data);
+    }
+
+    private function legacyMenuSettings() {
+        return array(
+            'probg_blog_type' => 'menu',
+            'menu_description' => (array)$this->config->get('module_probg_blog_menu_description'),
+            'show_blog' => (int)$this->config->get('module_probg_blog_menu_show_blog'),
+            'show_categories' => (int)$this->config->get('module_probg_blog_menu_show_categories'),
+            'show_articles' => (int)$this->config->get('module_probg_blog_menu_show_articles'),
+            'category_id' => (int)$this->config->get('module_probg_blog_menu_category_id'),
+            'limit' => max(1, (int)$this->config->get('module_probg_blog_menu_limit')),
+            'sort' => $this->config->get('module_probg_blog_menu_sort') === 'sort_order' ? 'sort_order' : 'date',
+            'display' => 'list',
+            'slider_items' => 3,
+            'slider_autoplay' => 0,
+            'slider_interval' => 5000,
+            'status' => 1
+        );
+    }
+
+    private function menuModule($menu=array()) {
+        $language_id = (int)$this->config->get('config_language_id');
+        $descriptions = isset($menu['menu_description']) && is_array($menu['menu_description']) ? $menu['menu_description'] : array();
+        $title = '';
+        if (isset($descriptions[$language_id]['title'])) {
+            $title = trim($descriptions[$language_id]['title']);
+        }
+        if ($title === '') $title = $this->language->get('heading_title');
+
+        $data['heading_title'] = $title;
+        $data['text_blog_home'] = $this->language->get('text_blog_home');
+        $data['text_categories'] = $this->language->get('text_categories');
+        $data['text_articles'] = $this->language->get('text_articles');
+        $data['text_previous'] = $this->language->get('text_previous');
+        $data['text_next'] = $this->language->get('text_next');
+        $data['show_blog'] = isset($menu['show_blog']) && (int)$menu['show_blog'] === 1;
+        $data['show_categories'] = isset($menu['show_categories']) && (int)$menu['show_categories'] === 1;
+        $data['show_articles'] = isset($menu['show_articles']) && (int)$menu['show_articles'] === 1;
+        $data['blog_url'] = $this->url->link('extension/module/probg_blog','',true);
+        $data['categories'] = array();
+        $data['articles'] = array();
+        $data['display'] = isset($menu['display']) && $menu['display'] === 'slider' ? 'slider' : 'list';
+        $data['slider_items'] = max(1, min(6, isset($menu['slider_items']) ? (int)$menu['slider_items'] : 3));
+        $data['slider_autoplay'] = !empty($menu['slider_autoplay']) ? 1 : 0;
+        $data['slider_interval'] = max(1000, min(30000, isset($menu['slider_interval']) ? (int)$menu['slider_interval'] : 5000));
+        $data['menu_uid'] = 'probg-blog-menu-' . (++self::$menu_counter);
+
+        if ($data['show_categories']) {
+            foreach ($this->model_extension_probg_blog_blog->getCategories() as $category) {
+                $data['categories'][] = array(
+                    'title'=>$category['title'],
+                    'article_count'=>(int)$category['article_count'],
+                    'href'=>$this->url->link('extension/module/probg_blog','probg_blog_category_id='.(int)$category['category_id'],true)
+                );
+            }
+        }
+
+        if ($data['show_articles']) {
+            $limit = max(1, min(100, isset($menu['limit']) ? (int)$menu['limit'] : 10));
+            $category_id = isset($menu['category_id']) ? (int)$menu['category_id'] : 0;
+            $sort = isset($menu['sort']) && $menu['sort'] === 'sort_order' ? 'sort_order' : 'date';
+            $filter = array('limit'=>$limit, 'sort'=>$sort);
+            if ($category_id > 0) $filter['category_id'] = $category_id;
+            $width = max(1, (int)$this->config->get('module_probg_blog_image_list_width'));
+            $height = max(1, (int)$this->config->get('module_probg_blog_image_list_height'));
+            foreach ($this->model_extension_probg_blog_blog->getArticles($filter) as $article) {
+                $data['articles'][] = array(
+                    'title'=>$article['title'],
+                    'category_title'=>$article['category_title'],
+                    'thumb'=>$this->image($article['image'],$width,$height),
+                    'date_added'=>date($this->language->get('date_format_short'),strtotime($article['date_added'])),
+                    'href'=>$this->url->link('extension/module/probg_blog','probg_blog_category_id='.(int)$article['category_id'].'&probg_blog_article_id='.(int)$article['article_id'],true)
+                );
+            }
+        }
+
+        if (!$data['show_blog'] && !$data['categories'] && !$data['articles']) return '';
+
+        if ($data['display'] === 'slider' && $data['articles']) {
+            $this->document->addStyle('catalog/view/theme/default/stylesheet/probg_blog_menu_slider.css');
+            $this->document->addScript('catalog/view/javascript/probg_blog_menu_slider.js');
+        }
+
+        return $this->load->view('extension/module/probg_blog_menu', $data);
+    }
+
+    private function articleCards'''
+          s, n = method_pattern.subn(method_replacement, s, count=1)
+          if n != 1:
+              raise SystemExit('Catalog module/menu methods not found')
+          p.write_text(s)
+
+          # ------------------------------------------------------------------
+          # Catalog menu template.
+          # ------------------------------------------------------------------
+          Path('upload/catalog/view/theme/default/template/extension/module/probg_blog_menu.twig').write_text('''<aside id="{{ menu_uid }}" class="card border-0 shadow-sm probg-blog-menu">
+  {% if heading_title %}<div class="card-header bg-transparent border-bottom"><h3 class="h5 mb-0">{{ heading_title }}</h3></div>{% endif %}
+
+  {% if show_blog or (show_categories and categories) %}
+    <div class="list-group list-group-flush">
+      {% if show_blog %}<a href="{{ blog_url }}" class="list-group-item list-group-item-action d-flex align-items-center gap-2"><i class="fa fa-home" aria-hidden="true"></i><span>{{ text_blog_home }}</span></a>{% endif %}
+      {% if show_categories and categories %}
+        <div class="list-group-item text-uppercase small fw-semibold text-muted bg-light">{{ text_categories }}</div>
+        {% for category in categories %}<a href="{{ category.href }}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center"><span>{{ category.title }}</span><span class="badge rounded-pill text-bg-secondary">{{ category.article_count }}</span></a>{% endfor %}
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if show_articles and articles %}
+    {% if display == 'slider' %}
+      <div class="probg-blog-menu-articles p-3">
+        <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+          <div class="text-uppercase small fw-semibold text-muted">{{ text_articles }}</div>
+          {% if articles|length > 1 %}
+            <div class="btn-group btn-group-sm" role="group" aria-label="{{ text_articles }}">
+              <button type="button" class="btn btn-outline-secondary probg-blog-slider-prev" aria-label="{{ text_previous }}"><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
+              <button type="button" class="btn btn-outline-secondary probg-blog-slider-next" aria-label="{{ text_next }}"><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+            </div>
+          {% endif %}
+        </div>
+        <div class="probg-blog-article-slider" data-probg-blog-slider data-items="{{ slider_items }}" data-autoplay="{{ slider_autoplay }}" data-interval="{{ slider_interval }}">
+          <div class="probg-blog-slider-viewport">
+            <div class="probg-blog-slider-track">
+              {% for article in articles %}
+                <article class="probg-blog-slider-slide">
+                  <a href="{{ article.href }}" class="card h-100 text-decoration-none probg-blog-slider-card">
+                    {% if article.thumb %}<img src="{{ article.thumb }}" class="card-img-top img-fluid" alt="{{ article.title }}" loading="lazy">{% endif %}
+                    <div class="card-body p-3">
+                      {% if article.category_title %}<div class="small text-muted mb-1">{{ article.category_title }}</div>{% endif %}
+                      <h4 class="h6 card-title mb-1">{{ article.title }}</h4>
+                      {% if article.date_added %}<div class="small text-muted">{{ article.date_added }}</div>{% endif %}
+                    </div>
+                  </a>
+                </article>
+              {% endfor %}
+            </div>
+          </div>
+          {% if articles|length > 1 %}<div class="probg-blog-slider-dots mt-3" aria-hidden="true"></div>{% endif %}
+        </div>
+      </div>
+    {% else %}
+      <div class="list-group list-group-flush">
+        <div class="list-group-item text-uppercase small fw-semibold text-muted bg-light">{{ text_articles }}</div>
+        {% for article in articles %}<a href="{{ article.href }}" class="list-group-item list-group-item-action"><span class="d-block fw-semibold">{{ article.title }}</span>{% if article.category_title %}<small class="text-muted">{{ article.category_title }}</small>{% endif %}</a>{% endfor %}
+      </div>
+    {% endif %}
+  {% endif %}
+</aside>
+''')
+
+          # ------------------------------------------------------------------
+          # Slider CSS and JS (no external dependency/CDN).
+          # ------------------------------------------------------------------
+          Path('upload/catalog/view/theme/default/stylesheet/probg_blog_menu_slider.css').write_text('''.probg-blog-article-slider{position:relative;min-width:0}.probg-blog-slider-viewport{overflow:hidden;width:100%}.probg-blog-slider-track{display:flex;align-items:stretch;transition:transform .35s ease;will-change:transform}.probg-blog-slider-slide{box-sizing:border-box;flex:0 0 100%;min-width:0;padding-right:.75rem}.probg-blog-slider-slide:last-child{padding-right:0}.probg-blog-slider-card{overflow:hidden;color:inherit;background:#fff;border:1px solid rgba(0,0,0,.1);transition:transform .2s ease,box-shadow .2s ease}.probg-blog-slider-card:hover,.probg-blog-slider-card:focus{color:inherit;transform:translateY(-2px);box-shadow:0 .5rem 1rem rgba(0,0,0,.12)}.probg-blog-slider-card .card-img-top{width:100%;aspect-ratio:16/9;object-fit:cover}.probg-blog-slider-dots{display:flex;justify-content:center;gap:.4rem}.probg-blog-slider-dot{width:.55rem;height:.55rem;padding:0;border:0;border-radius:50%;background:rgba(0,0,0,.25)}.probg-blog-slider-dot.is-active{background:currentColor}.probg-blog-menu .btn-group{display:inline-flex}.probg-blog-menu .btn-group .btn{margin:0}@media (prefers-reduced-motion:reduce){.probg-blog-slider-track,.probg-blog-slider-card{transition:none}}
+''')
+          Path('upload/catalog/view/javascript/probg_blog_menu_slider.js').write_text('''(function(){
+  'use strict';
+  function initSlider(root){
+    if(root.dataset.probgBlogReady==='1')return;
+    root.dataset.probgBlogReady='1';
+    var track=root.querySelector('.probg-blog-slider-track');
+    var slides=[].slice.call(root.querySelectorAll('.probg-blog-slider-slide'));
+    var wrapper=root.closest('.probg-blog-menu');
+    if(!track||!slides.length||!wrapper)return;
+    var prev=wrapper.querySelector('.probg-blog-slider-prev');
+    var next=wrapper.querySelector('.probg-blog-slider-next');
+    var dots=root.querySelector('.probg-blog-slider-dots');
+    var configured=Math.max(1,Math.min(6,parseInt(root.getAttribute('data-items')||'3',10)));
+    var autoplay=root.getAttribute('data-autoplay')==='1';
+    var interval=Math.max(1000,Math.min(30000,parseInt(root.getAttribute('data-interval')||'5000',10)));
+    var index=0,visible=1,timer=null,startX=null;
+    function calcVisible(){var w=root.clientWidth;return Math.max(1,Math.min(configured,w<576?1:(w<992?Math.min(2,configured):configured),slides.length));}
+    function maxIndex(){return Math.max(0,slides.length-visible);}
+    function buildDots(){if(!dots)return;dots.innerHTML='';for(var i=0;i<=maxIndex();i++){var b=document.createElement('button');b.type='button';b.className='probg-blog-slider-dot';b.setAttribute('tabindex','-1');b.dataset.index=i;dots.appendChild(b);}}
+    function render(){visible=calcVisible();slides.forEach(function(slide){slide.style.flexBasis=(100/visible)+'%';});if(index>maxIndex())index=maxIndex();track.style.transform='translate3d(-'+(index*(100/visible))+'%,0,0)';if(prev)prev.disabled=index<=0;if(next)next.disabled=index>=maxIndex();if(dots){if(dots.children.length!==maxIndex()+1)buildDots();[].forEach.call(dots.children,function(dot,i){dot.classList.toggle('is-active',i===index);});}}
+    function move(step){var target=index+step;if(target>maxIndex())target=autoplay?0:maxIndex();if(target<0)target=autoplay?maxIndex():0;index=target;render();}
+    function stop(){if(timer){clearInterval(timer);timer=null;}}
+    function start(){stop();if(autoplay&&maxIndex()>0&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches)timer=setInterval(function(){move(1);},interval);}
+    if(prev)prev.addEventListener('click',function(){move(-1);start();});
+    if(next)next.addEventListener('click',function(){move(1);start();});
+    if(dots)dots.addEventListener('click',function(e){var dot=e.target.closest('.probg-blog-slider-dot');if(!dot)return;index=parseInt(dot.dataset.index,10)||0;render();start();});
+    root.addEventListener('mouseenter',stop);root.addEventListener('mouseleave',start);root.addEventListener('focusin',stop);root.addEventListener('focusout',start);
+    root.addEventListener('touchstart',function(e){startX=e.touches&&e.touches[0]?e.touches[0].clientX:null;},{passive:true});
+    root.addEventListener('touchend',function(e){if(startX===null)return;var end=e.changedTouches&&e.changedTouches[0]?e.changedTouches[0].clientX:startX;var diff=end-startX;startX=null;if(Math.abs(diff)>40){move(diff<0?1:-1);start();}},{passive:true});
+    var resizeTimer;window.addEventListener('resize',function(){clearTimeout(resizeTimer);resizeTimer=setTimeout(render,120);});
+    render();start();
+  }
+  function init(){[].forEach.call(document.querySelectorAll('[data-probg-blog-slider]'),initSlider);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+})();
+''')
+
+          # ------------------------------------------------------------------
+          # Catalog languages.
+          # ------------------------------------------------------------------
+          for lang, prev_text, next_text in [('bg-bg','Предишни','Следващи'),('en-gb','Previous','Next')]:
+              p = Path('upload/catalog/language')/lang/'extension/module/probg_blog.php'
+              s = p.read_text().rstrip() + "$_['text_previous']='" + prev_text + "';$_['text_next']='" + next_text + "';\n"
+              p.write_text(s)
+
+          # ------------------------------------------------------------------
+          # Admin language additions + stage text.
+          # ------------------------------------------------------------------
+          p = Path('upload/admin/language/bg-bg/extension/module/probg_blog.php')
+          s = p.read_text()
+          s = re.sub(r"\$_\['text_stage_info'\]='[^']*';", "$_['text_stage_info']='Версия 1.3.0 добавя неограничен брой отделни блог менюта като стандартни OpenCart module instances, коригира toggle/category филтрите и добавя List/Slider изглед за статиите.';", s)
+          s = s.rstrip() + "$_['entry_menu_name']='Име на менюто';$_['entry_menu_status']='Статус на менюто';$_['entry_menu_display']='Изглед на статиите';$_['entry_slider_items']='Статии на екран';$_['entry_slider_autoplay']='Автоматично превъртане';$_['entry_slider_interval']='Интервал (ms)';$_['text_menu_list']='Списък';$_['text_menu_slider']='Слайдър';$_['help_multiple_menus']='Създайте неограничен брой менюта. Всяко се записва като отделна OpenCart module instance и може да бъде избрано независимо в Design → Layouts.';$_['help_slider_items']='Брой едновременно видими статии на широк екран. На tablet/mobile броят се адаптира автоматично.';$_['button_add_menu']='Добави меню';$_['button_remove_menu']='Премахни меню';$_['error_menu_name']='Името на менюто е задължително и трябва да е до 64 символа.';$_['error_slider_items']='Броят статии на екран трябва да е между 1 и 6.';$_['error_slider_interval']='Интервалът трябва да е между 1000 и 30000 ms.';\n"
+          p.write_text(s)
+
+          p = Path('upload/admin/language/en-gb/extension/module/probg_blog.php')
+          s = p.read_text()
+          s = re.sub(r"\$_\['text_stage_info'\]='[^']*';", "$_['text_stage_info']='Version 1.3.0 adds unlimited independent blog menus as standard OpenCart module instances, fixes toggle/category filtering and adds List/Slider article views.';", s)
+          s = s.rstrip() + "$_['entry_menu_name']='Menu name';$_['entry_menu_status']='Menu status';$_['entry_menu_display']='Article display';$_['entry_slider_items']='Articles per view';$_['entry_slider_autoplay']='Autoplay';$_['entry_slider_interval']='Interval (ms)';$_['text_menu_list']='List';$_['text_menu_slider']='Slider';$_['help_multiple_menus']='Create unlimited menus. Each menu is stored as a separate OpenCart module instance and can be selected independently in Design → Layouts.';$_['help_slider_items']='Number of articles visible on wide screens. Tablet/mobile counts adapt automatically.';$_['button_add_menu']='Add menu';$_['button_remove_menu']='Remove menu';$_['error_menu_name']='Menu name is required and must not exceed 64 characters.';$_['error_slider_items']='Articles per view must be between 1 and 6.';$_['error_slider_interval']='Interval must be between 1000 and 30000 ms.';\n"
+          p.write_text(s)
+
+          # ------------------------------------------------------------------
+          # Admin template: replace the Menu tab and add dynamic editor JS.
+          # ------------------------------------------------------------------
+          p = Path('upload/admin/view/template/extension/module/probg_blog.twig')
+          s = p.read_text()
+          menu_tab = '''          <div class="tab-pane" id="tab-menu">
+            <div class="alert alert-info"><i class="fa fa-info-circle"></i> {{ help_multiple_menus }}</div>
+            <div class="clearfix" style="margin-bottom:15px"><button type="button" id="button-add-probg-menu" class="btn btn-primary pull-right"><i class="fa fa-plus"></i> {{ button_add_menu }}</button></div>
+            <div id="probg-blog-menu-editors">
+              {% for menu in probg_blog_menus %}
+                {% set row = loop.index0 %}
+                <div class="panel panel-default probg-blog-menu-editor" data-row="{{ row }}">
+                  <div class="panel-heading clearfix"><h3 class="panel-title pull-left"><i class="fa fa-bars"></i> <span class="probg-blog-menu-editor-title">{{ menu.name }}</span></h3><button type="button" class="btn btn-danger btn-xs pull-right button-remove-probg-menu"><i class="fa fa-trash"></i> {{ button_remove_menu }}</button></div>
+                  <div class="panel-body">
+                    <input type="hidden" name="probg_blog_menus[{{ row }}][module_id]" value="{{ menu.module_id }}">
+                    <input type="hidden" name="probg_blog_menus[{{ row }}][probg_blog_type]" value="menu">
+                    <div class="form-group{% if error_menu_name[row] %} has-error{% endif %}"><label class="col-sm-2 control-label">{{ entry_menu_name }}</label><div class="col-sm-10"><input type="text" name="probg_blog_menus[{{ row }}][name]" value="{{ menu.name }}" class="form-control probg-blog-menu-name">{% if error_menu_name[row] %}<div class="text-danger">{{ error_menu_name[row] }}</div>{% endif %}</div></div>
+                    <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_status }}</label><div class="col-sm-10"><select name="probg_blog_menus[{{ row }}][status]" class="form-control"><option value="1"{% if menu.status %} selected{% endif %}>{{ text_enabled }}</option><option value="0"{% if not menu.status %} selected{% endif %}>{{ text_disabled }}</option></select></div></div>
+                    <ul class="nav nav-tabs probg-menu-language-tabs">{% for language in languages %}<li><a href="#menu-{{ row }}-language-{{ language.language_id }}" data-toggle="tab"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}"> {{ language.name }}</a></li>{% endfor %}</ul>
+                    <div class="tab-content">{% for language in languages %}<div class="tab-pane" id="menu-{{ row }}-language-{{ language.language_id }}"><div class="form-group{% if error_menu_title[row][language.language_id] %} has-error{% endif %}"><label class="col-sm-2 control-label">{{ entry_menu_title }}</label><div class="col-sm-10"><input type="text" name="probg_blog_menus[{{ row }}][menu_description][{{ language.language_id }}][title]" value="{{ menu.menu_description[language.language_id].title|default('') }}" class="form-control">{% if error_menu_title[row][language.language_id] %}<div class="text-danger">{{ error_menu_title[row][language.language_id] }}</div>{% endif %}</div></div></div>{% endfor %}</div>
+                    <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_show_blog }}</label><div class="col-sm-10"><select name="probg_blog_menus[{{ row }}][show_blog]" class="form-control"><option value="1"{% if menu.show_blog %} selected{% endif %}>{{ text_enabled }}</option><option value="0"{% if not menu.show_blog %} selected{% endif %}>{{ text_disabled }}</option></select></div></div>
+                    <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_show_categories }}</label><div class="col-sm-10"><select name="probg_blog_menus[{{ row }}][show_categories]" class="form-control"><option value="1"{% if menu.show_categories %} selected{% endif %}>{{ text_enabled }}</option><option value="0"{% if not menu.show_categories %} selected{% endif %}>{{ text_disabled }}</option></select></div></div>
+                    <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_show_articles }}</label><div class="col-sm-10"><select name="probg_blog_menus[{{ row }}][show_articles]" class="form-control"><option value="1"{% if menu.show_articles %} selected{% endif %}>{{ text_enabled }}</option><option value="0"{% if not menu.show_articles %} selected{% endif %}>{{ text_disabled }}</option></select></div></div>
+                    <div class="form-group"><label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_menu_category }}">{{ entry_menu_category }}</span></label><div class="col-sm-10"><select name="probg_blog_menus[{{ row }}][category_id]" class="form-control"><option value="0">{{ text_all_categories }}</option>{% for category in menu_categories %}<option value="{{ category.category_id }}"{% if category.category_id == menu.category_id %} selected{% endif %}>{{ category.title }}</option>{% endfor %}</select></div></div>
+                    <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_sort }}</label><div class="col-sm-10"><select name="probg_blog_menus[{{ row }}][sort]" class="form-control"><option value="date"{% if menu.sort == 'date' %} selected{% endif %}>{{ text_date }}</option><option value="sort_order"{% if menu.sort == 'sort_order' %} selected{% endif %}>{{ text_sort_order }}</option></select></div></div>
+                    <div class="form-group{% if error_menu_limit[row] %} has-error{% endif %}"><label class="col-sm-2 control-label">{{ entry_menu_limit }}</label><div class="col-sm-10"><input type="number" min="1" max="100" name="probg_blog_menus[{{ row }}][limit]" value="{{ menu.limit }}" class="form-control">{% if error_menu_limit[row] %}<div class="text-danger">{{ error_menu_limit[row] }}</div>{% endif %}</div></div>
+                    <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_display }}</label><div class="col-sm-10"><select name="probg_blog_menus[{{ row }}][display]" class="form-control probg-menu-display"><option value="list"{% if menu.display == 'list' %} selected{% endif %}>{{ text_menu_list }}</option><option value="slider"{% if menu.display == 'slider' %} selected{% endif %}>{{ text_menu_slider }}</option></select></div></div>
+                    <div class="probg-menu-slider-options"{% if menu.display != 'slider' %} style="display:none"{% endif %}>
+                      <div class="form-group{% if error_slider_items[row] %} has-error{% endif %}"><label class="col-sm-2 control-label"><span data-toggle="tooltip" title="{{ help_slider_items }}">{{ entry_slider_items }}</span></label><div class="col-sm-10"><input type="number" min="1" max="6" name="probg_blog_menus[{{ row }}][slider_items]" value="{{ menu.slider_items }}" class="form-control">{% if error_slider_items[row] %}<div class="text-danger">{{ error_slider_items[row] }}</div>{% endif %}</div></div>
+                      <div class="form-group"><label class="col-sm-2 control-label">{{ entry_slider_autoplay }}</label><div class="col-sm-10"><select name="probg_blog_menus[{{ row }}][slider_autoplay]" class="form-control"><option value="1"{% if menu.slider_autoplay %} selected{% endif %}>{{ text_enabled }}</option><option value="0"{% if not menu.slider_autoplay %} selected{% endif %}>{{ text_disabled }}</option></select></div></div>
+                      <div class="form-group{% if error_slider_interval[row] %} has-error{% endif %}"><label class="col-sm-2 control-label">{{ entry_slider_interval }}</label><div class="col-sm-10"><input type="number" min="1000" max="30000" step="500" name="probg_blog_menus[{{ row }}][slider_interval]" value="{{ menu.slider_interval }}" class="form-control">{% if error_slider_interval[row] %}<div class="text-danger">{{ error_slider_interval[row] }}</div>{% endif %}</div></div>
+                    </div>
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+'''
+          pattern = re.compile(r'          <div class="tab-pane" id="tab-menu">.*?(?=          <div class="tab-pane" id="tab-images">)', re.S)
+          s, n = pattern.subn(menu_tab, s, count=1)
+          if n != 1:
+              raise SystemExit('Admin menu tab not found')
+
+          old_script = "<script>$('#language a:first').tab('show');$('#menu-language a:first').tab('show');</script>"
+          new_script = '''<script type="text/template" id="probg-blog-menu-template">
+  <div class="panel panel-default probg-blog-menu-editor" data-row="__ROW__">
+    <div class="panel-heading clearfix"><h3 class="panel-title pull-left"><i class="fa fa-bars"></i> <span class="probg-blog-menu-editor-title">ProBG Blog Menu</span></h3><button type="button" class="btn btn-danger btn-xs pull-right button-remove-probg-menu"><i class="fa fa-trash"></i> {{ button_remove_menu }}</button></div>
+    <div class="panel-body">
+      <input type="hidden" name="probg_blog_menus[__ROW__][module_id]" value="0"><input type="hidden" name="probg_blog_menus[__ROW__][probg_blog_type]" value="menu">
+      <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_name }}</label><div class="col-sm-10"><input type="text" name="probg_blog_menus[__ROW__][name]" value="ProBG Blog Menu" class="form-control probg-blog-menu-name"></div></div>
+      <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_status }}</label><div class="col-sm-10"><select name="probg_blog_menus[__ROW__][status]" class="form-control"><option value="1" selected>{{ text_enabled }}</option><option value="0">{{ text_disabled }}</option></select></div></div>
+      <ul class="nav nav-tabs probg-menu-language-tabs">{% for language in languages %}<li><a href="#menu-__ROW__-language-{{ language.language_id }}" data-toggle="tab"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}"> {{ language.name }}</a></li>{% endfor %}</ul>
+      <div class="tab-content">{% for language in languages %}<div class="tab-pane" id="menu-__ROW__-language-{{ language.language_id }}"><div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_title }}</label><div class="col-sm-10"><input type="text" name="probg_blog_menus[__ROW__][menu_description][{{ language.language_id }}][title]" value="" class="form-control"></div></div></div>{% endfor %}</div>
+      <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_show_blog }}</label><div class="col-sm-10"><select name="probg_blog_menus[__ROW__][show_blog]" class="form-control"><option value="1" selected>{{ text_enabled }}</option><option value="0">{{ text_disabled }}</option></select></div></div>
+      <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_show_categories }}</label><div class="col-sm-10"><select name="probg_blog_menus[__ROW__][show_categories]" class="form-control"><option value="1" selected>{{ text_enabled }}</option><option value="0">{{ text_disabled }}</option></select></div></div>
+      <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_show_articles }}</label><div class="col-sm-10"><select name="probg_blog_menus[__ROW__][show_articles]" class="form-control"><option value="1" selected>{{ text_enabled }}</option><option value="0">{{ text_disabled }}</option></select></div></div>
+      <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_category }}</label><div class="col-sm-10"><select name="probg_blog_menus[__ROW__][category_id]" class="form-control"><option value="0">{{ text_all_categories }}</option>{% for category in menu_categories %}<option value="{{ category.category_id }}">{{ category.title }}</option>{% endfor %}</select></div></div>
+      <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_sort }}</label><div class="col-sm-10"><select name="probg_blog_menus[__ROW__][sort]" class="form-control"><option value="date" selected>{{ text_date }}</option><option value="sort_order">{{ text_sort_order }}</option></select></div></div>
+      <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_limit }}</label><div class="col-sm-10"><input type="number" min="1" max="100" name="probg_blog_menus[__ROW__][limit]" value="10" class="form-control"></div></div>
+      <div class="form-group"><label class="col-sm-2 control-label">{{ entry_menu_display }}</label><div class="col-sm-10"><select name="probg_blog_menus[__ROW__][display]" class="form-control probg-menu-display"><option value="list" selected>{{ text_menu_list }}</option><option value="slider">{{ text_menu_slider }}</option></select></div></div>
+      <div class="probg-menu-slider-options" style="display:none">
+        <div class="form-group"><label class="col-sm-2 control-label">{{ entry_slider_items }}</label><div class="col-sm-10"><input type="number" min="1" max="6" name="probg_blog_menus[__ROW__][slider_items]" value="3" class="form-control"></div></div>
+        <div class="form-group"><label class="col-sm-2 control-label">{{ entry_slider_autoplay }}</label><div class="col-sm-10"><select name="probg_blog_menus[__ROW__][slider_autoplay]" class="form-control"><option value="1" selected>{{ text_enabled }}</option><option value="0">{{ text_disabled }}</option></select></div></div>
+        <div class="form-group"><label class="col-sm-2 control-label">{{ entry_slider_interval }}</label><div class="col-sm-10"><input type="number" min="1000" max="30000" step="500" name="probg_blog_menus[__ROW__][slider_interval]" value="5000" class="form-control"></div></div>
+      </div>
+    </div>
+  </div>
+</script>
+<script>
+$('#language a:first').tab('show');
+$('.probg-menu-language-tabs').each(function(){ $(this).find('a:first').tab('show'); });
+var probgMenuRow = {{ probg_blog_menus|length }};
+$('#button-add-probg-menu').on('click', function(){
+  var html = $('#probg-blog-menu-template').html().replace(/__ROW__/g, probgMenuRow++);
+  var $menu = $(html).appendTo('#probg-blog-menu-editors');
+  $menu.find('.probg-menu-language-tabs a:first').tab('show');
+});
+$(document).on('click', '.button-remove-probg-menu', function(){ $(this).closest('.probg-blog-menu-editor').remove(); });
+$(document).on('input', '.probg-blog-menu-name', function(){ $(this).closest('.probg-blog-menu-editor').find('.probg-blog-menu-editor-title').text($(this).val() || 'ProBG Blog Menu'); });
+$(document).on('change', '.probg-menu-display', function(){ $(this).closest('.probg-blog-menu-editor').find('.probg-menu-slider-options').toggle($(this).val() === 'slider'); });
+</script>'''
+          if old_script not in s:
+              raise SystemExit('Old admin JS marker not found')
+          s = s.replace(old_script, new_script, 1)
+          p.write_text(s)
+
+          # ------------------------------------------------------------------
+          # OCMOD version; source controller now owns version/stage.
+          # ------------------------------------------------------------------
+          p = Path('install.xml')
+          s = p.read_text()
+          s = re.sub(r'<version>[^<]+</version>', '<version>1.3.0</version>', s, count=1)
+          s = re.sub(r'\n  <file path="admin/controller/extension/module/probg_blog\.php">.*?</file>\n', '\n', s, count=1, flags=re.S)
+          p.write_text(s)
+
+          # ------------------------------------------------------------------
+          # Changelog and docs.
+          # ------------------------------------------------------------------
+          p = Path('CHANGELOG.md')
+          s = p.read_text()
+          entry = '''# Changelog
+
+## [1.3.0] - 2026-08-25
+
+### fix — Български
+
+- Коригирани са настройките **Покажи линк към блога** и **Покажи категории**, които вече се прилагат от конкретното menu instance.
+- Коригиран е филтърът **Категория за статиите**; frontend заявката получава `category_id` директно от избраното меню.
+
+### feat — Български
+
+- Таб **Меню** вече поддържа неограничен брой отделни менюта.
+- Всяко меню се записва като стандартен OpenCart `module` instance и се появява независимо в **Design → Layouts**.
+- Всяко меню има собствено административно име, многоезично заглавие, статус, show/hide настройки, категория, лимит и подредба.
+- Добавен е избор **Списък / Слайдър** за статиите.
+- Добавен е собствен responsive article slider без CDN: multi-item desktop, adaptive tablet/mobile, prev/next, dots, autoplay и touch swipe.
+- Старата единична menu конфигурация се мигрира автоматично към първото menu instance и съществуващите layout записи в режим Menu се пренасочват към него.
+
+### fix — English
+
+- Fixed **Show blog link** and **Show categories** so each menu instance applies its own values.
+- Fixed **Article category** filtering; the storefront query receives `category_id` directly from the selected menu instance.
+
+### feat — English
+
+- The **Menu** tab now supports unlimited independent menus.
+- Each menu is stored as a standard OpenCart `module` instance and appears independently in **Design → Layouts**.
+- Each menu has its own admin name, multilingual title, status, visibility settings, category, limit and sorting.
+- Added **List / Slider** article display modes.
+- Added a dependency-free responsive article slider with multi-item desktop layout, adaptive tablet/mobile layout, prev/next controls, dots, autoplay and touch swipe.
+- The legacy single-menu configuration is automatically migrated to the first menu instance and existing Menu layout assignments are redirected to it.
+
+'''
+          if s.startswith('# Changelog\n'):
+              s = entry + s[len('# Changelog\n\n'):]
+          else:
+              s = entry + s
+          p.write_text(s)
+
+          Path('docs/1.3.0.md').write_text('''# ProBG Blog 1.3.0
+
+## Български
+
+Версия 1.3.0 преработва frontend менюто като система от стандартни OpenCart module instances.
+
+### Неограничен брой менюта
+
+В **ProBG Blog → Настройки → Меню** може да се създава неограничен брой менюта. Всяко меню има собствено административно име и се появява като отделна позиция в **Design → Layouts**, например `Blog Sidebar`, `Начална страница — статии`, `Footer Blog`.
+
+### Настройки на всяко меню
+
+- многоезично заглавие;
+- статус;
+- покажи линк към блога;
+- покажи категории;
+- покажи статии;
+- категория за статиите;
+- лимит;
+- подредба по дата или sort_order;
+- изглед **Списък** или **Слайдър**.
+
+### Slider
+
+Slider режимът е собствен lightweight компонент без външен CDN. Поддържа responsive multi-item изглед, автоматична адаптация за tablet/mobile, prev/next бутони, dots, autoplay, configurable interval, touch swipe и `prefers-reduced-motion`.
+
+### Миграция
+
+При upgrade старата единична menu конфигурация се копира в първото menu instance. Ако старият глобален модул е бил поставен в Layout с output `menu`, записът `probg_blog` се пренасочва към `probg_blog.<module_id>`. Данните на категории и статии не се променят.
+
+## English
+
+Version 1.3.0 converts the frontend menu into standard OpenCart module instances. The Menu tab can create unlimited independent menus, each selectable separately in Design → Layouts. Every menu has its own multilingual title, visibility options, category filter, limit, sorting and List/Slider article display. Legacy menu settings are migrated automatically.
+''')
+
+          p = Path('docs/STAGES.md')
+          s = p.read_text().rstrip() + "\n- Stage 23 / 1.3.0 — Unlimited OpenCart menu instances, fixed menu toggles/category filter, and responsive list/slider article output.\n"
+          p.write_text(s)
+
+          # README: current version and new feature note.
+          p = Path('README.md')
+          s = p.read_text()
+          if '## Промени във версия 1.3.0' not in s:
+              anchor = '## Промени във версия 1.0.3'
+              note = '''## Промени във версия 1.3.0
+
+- Неограничен брой отделни frontend менюта чрез стандартни OpenCart module instances.
+- Коригирани са show/hide настройките и филтърът по категория на статиите.
+- Всеки menu instance има собствено име и може да бъде добавян независимо в **Design → Layouts**.
+- Добавени са режими **Списък** и **Слайдър** за статиите.
+- Slider режимът поддържа responsive multi-item layout, навигация, dots, autoplay и touch swipe без външен CDN.
+
+## Changes in version 1.3.0
+
+- Unlimited independent frontend menus implemented as standard OpenCart module instances.
+- Fixed menu show/hide settings and article category filtering.
+- Every menu instance has its own admin name and can be selected independently in **Design → Layouts**.
+- Added **List** and **Slider** article display modes.
+- Slider mode supports responsive multi-item layout, navigation, dots, autoplay and touch swipe without an external CDN.
+
+'''
+              s = s.replace(anchor, note + anchor, 1)
+          s = s.replace('- Версия: `1.0.3`', '- Версия: `1.3.0`', 1)
+          s = s.replace('- Статус: **Beta**', '- Статус: **Stable**', 1)
+          p.write_text(s)
+          PY
+
+      - name: Validate source
+        run: |
+          set -e
+          php -l upload/admin/controller/extension/module/probg_blog.php
+          php -l upload/admin/model/extension/module/probg_blog.php
+          php -l upload/catalog/controller/extension/module/probg_blog.php
+          php -l upload/catalog/model/extension/probg_blog/blog.php
+          php -r '$x=simplexml_load_file("install.xml"); if (!$x || (string)$x->version !== "1.3.0") { exit(1); }'
+          grep -q "private function syncMenuInstances" upload/admin/controller/extension/module/probg_blog.php
+          grep -q "probg_blog_type.*menu" upload/catalog/controller/extension/module/probg_blog.php
+          grep -q "data-probg-blog-slider" upload/catalog/view/theme/default/template/extension/module/probg_blog_menu.twig
+          test -f upload/catalog/view/javascript/probg_blog_menu_slider.js
+          test -f upload/catalog/view/theme/default/stylesheet/probg_blog_menu_slider.css
+
+      - name: Commit feature
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add CHANGELOG.md README.md docs install.xml upload
+          git commit -m 'feat: add unlimited blog menus and article slider (1.3.0)'
+          git push origin HEAD:feat/1.3.0-multiple-menus-slider
