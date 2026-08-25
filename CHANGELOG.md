@@ -1,5 +1,37 @@
 # Changelog
 
+## [1.3.0] - 2026-08-25
+
+### fix — Български
+
+- Коригирани са настройките **Покажи линк към блога** и **Покажи категории**, които вече се прилагат от конкретното menu instance.
+- Коригиран е филтърът **Категория за статиите**; frontend заявката получава `category_id` директно от избраното меню.
+
+### feat — Български
+
+- Таб **Меню** вече поддържа неограничен брой отделни менюта.
+- Всяко меню се записва като стандартен OpenCart `module` instance и се появява независимо в **Design → Layouts**.
+- Добавен е системен `ProBG Blog - Latest Articles` instance, за да се запази досегашният блок с последни статии при наличие на menu instances.
+- Всяко меню има собствено административно име, многоезично заглавие, статус, show/hide настройки, категория, лимит и подредба.
+- Добавен е избор **Списък / Слайдър** за статиите.
+- Добавен е собствен responsive article slider без CDN: multi-item desktop, adaptive tablet/mobile, prev/next, dots, autoplay и touch swipe.
+- Старата единична menu конфигурация се мигрира автоматично към първото menu instance и съществуващите layout записи в режим Menu се пренасочват към него.
+
+### fix — English
+
+- Fixed **Show blog link** and **Show categories** so each menu instance applies its own values.
+- Fixed **Article category** filtering; the storefront query receives `category_id` directly from the selected menu instance.
+
+### feat — English
+
+- The **Menu** tab now supports unlimited independent menus.
+- Each menu is stored as a standard OpenCart `module` instance and appears independently in **Design → Layouts**.
+- Added a `ProBG Blog - Latest Articles` system instance to preserve the existing latest-articles layout block when menu instances exist.
+- Each menu has its own admin name, multilingual title, status, visibility settings, category, limit and sorting.
+- Added **List / Slider** article display modes.
+- Added a dependency-free responsive article slider with multi-item desktop layout, adaptive tablet/mobile layout, prev/next controls, dots, autoplay and touch swipe.
+- The legacy single-menu configuration is automatically migrated to the first menu instance and existing Menu layout assignments are redirected to it.
+
 ## [1.2.1] - 2026-08-25
 
 ### fix — Български

@@ -2,7 +2,7 @@
 <modification>
   <name>ProBG Blog</name>
   <code>probg_blog</code>
-  <version>1.2.1</version>
+  <version>1.3.0</version>
   <author>ProBG</author>
   <link>https://probg.com/</link>
 
@@ -27,16 +27,6 @@
     </operation>
   </file>
 
-  <file path="admin/controller/extension/module/probg_blog.php">
-    <operation error="skip">
-      <search><![CDATA[$data['stage'] = '17';]]></search>
-      <add position="replace"><![CDATA[$data['stage'] = '22';]]></add>
-    </operation>
-    <operation error="skip">
-      <search><![CDATA[$data['version'] = '1.0.5';]]></search>
-      <add position="replace"><![CDATA[$data['version'] = '1.2.1';]]></add>
-    </operation>
-  </file>
 
   <file path="catalog/controller/startup/seo_url.php">
     <operation error="skip"><search><![CDATA[if ($url[0] == 'manufacturer_id') {]]></search><add position="before"><![CDATA[

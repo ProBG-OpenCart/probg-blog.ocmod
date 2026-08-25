@@ -23,3 +23,4 @@
 - 1.1.1 — fixed recursive full-page rendering when ProBG Blog is assigned to an OpenCart layout; layout calls now render only Menu/Latest Articles and include a request-level recursion guard.
 - 1.2.0 — added a Fancybox-style article gallery lightbox using OpenCart 3's bundled Magnific Popup, with previous/next navigation, image counter, keyboard controls, responsive styling and graceful fallback to direct image links.
 - 1.2.1 — source-level layout detection and static recursion guard prevent memory exhaustion when ProBG Blog is assigned to layouts.
+- Stage 23 / 1.3.0 — Unlimited OpenCart menu instances, fixed menu toggles/category filter, and responsive list/slider article output.
