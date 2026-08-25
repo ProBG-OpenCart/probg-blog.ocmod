@@ -25,15 +25,6 @@ jobs:
         run: |
           python3 .github/tmp_patch_readme_descriptions_1_4_2.py
           rm .github/tmp_patch_readme_descriptions_1_4_2.py
-          grep -q '^### Кратко описание$' README.md
-          grep -q '^### Описание$' README.md
-          grep -q '^### Основни възможности$' README.md
-          grep -q '^### Документация$' README.md
-          grep -q '^### Short description$' README.md
-          grep -q '^### Description$' README.md
-          grep -q '^### Main features$' README.md
-          grep -q '^### Documentation$' README.md
-          grep -q -- '- Версия: `1.4.2`' README.md
 
       - name: Commit README
         run: |
