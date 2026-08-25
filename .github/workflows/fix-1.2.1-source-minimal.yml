@@ -1,4 +1,4 @@
-name: Finalize ProBG Blog 1.2.1
+name: Complete ProBG Blog 1.2.1 docs
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ permissions:
   contents: write
 
 jobs:
-  finalize:
+  docs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -17,55 +17,54 @@ jobs:
           ref: fix/1.2.1-layout-recursion-source
           fetch-depth: 0
 
-      - name: Finalize 1.2.1
+      - name: Update changelog and admin stage text
         run: |
           python3 - <<'PY'
           from pathlib import Path
-
-          p = Path('upload/catalog/controller/extension/module/probg_blog.php')
-          s = p.read_text()
-          s = s.replace("        if (!$is_blog_request || self::$full_page_rendering) {\n    return", "        if (!$is_blog_request || self::$full_page_rendering) {\n            return")
-          s = s.replace("        if ($article_id) {\n    $output", "        if ($article_id) {\n            $output")
-          s = s.replace("        } elseif ($category_id) {\n    $output", "        } elseif ($category_id) {\n            $output")
-          s = s.replace("        } else {\n    $output", "        } else {\n            $output")
-          p.write_text(s)
-
-          x = Path('install.xml')
-          t = x.read_text().replace('<version>1.2.0</version>', '<version>1.2.1</version>', 1)
-          t = t.replace("$data['stage'] = '21';", "$data['stage'] = '22';")
-          t = t.replace("$data['version'] = '1.2.0';", "$data['version'] = '1.2.1';")
-          marker = "<search><![CDATA[if ($setting && !isset($this->request->get['probg_blog_category_id'])"
-          pos = t.find(marker)
-          if pos >= 0:
-              a = t.rfind('    <operation error="skip">', 0, pos)
-              b = t.find('    </operation>', pos)
-              if a >= 0 and b >= 0:
-                  t = t[:a] + t[b + len('    </operation>'):]
-          x.write_text(t)
+          import re
 
           bg = Path('upload/admin/language/bg-bg/extension/module/probg_blog.php')
-          bg.write_text(bg.read_text().replace('Версия 1.2.0 добавя lightbox галерия за допълнителните изображения в статия с Magnific Popup, навигация, брояч и responsive оформление.', 'Версия 1.2.1 коригира рекурсивното зареждане и memory exhaustion при добавяне на ProBG Blog в OpenCart layout, включително на началната страница.'))
+          t = bg.read_text()
+          t = re.sub(r"\$_\['text_stage_info'\]='[^']*';", "$_['text_stage_info']='Версия 1.2.1 коригира рекурсивното зареждане и memory exhaustion при добавяне на ProBG Blog в OpenCart layout, включително на началната страница.';", t, count=1)
+          bg.write_text(t)
+
           en = Path('upload/admin/language/en-gb/extension/module/probg_blog.php')
-          en.write_text(en.read_text().replace('Version 1.2.0 adds a lightbox gallery for additional article images using Magnific Popup with navigation, counter and responsive styling.', 'Version 1.2.1 fixes recursive rendering and memory exhaustion when ProBG Blog is assigned to an OpenCart layout, including the home page.'))
+          t = en.read_text()
+          t = re.sub(r"\$_\['text_stage_info'\]='[^']*';", "$_['text_stage_info']='Version 1.2.1 fixes recursive rendering and memory exhaustion when ProBG Blog is assigned to an OpenCart layout, including the home page.';", t, count=1)
+          en.write_text(t)
 
-          st = Path('docs/STAGES.md')
-          line = '- 1.2.1 — source-level layout detection and static recursion guard prevent memory exhaustion when ProBG Blog is assigned to layouts.'
-          if line not in st.read_text(): st.write_text(st.read_text().rstrip() + '\n' + line + '\n')
+          c = Path('CHANGELOG.md')
+          t = c.read_text()
+          if '## [1.2.1]' not in t:
+              entry = '''## [1.2.1] - 2026-08-25
 
-          Path('docs/1.2.1.md').write_text('''# ProBG Blog 1.2.1\n\n## Български\n\nКоригира критично рекурсивно зареждане при поставяне на ProBG Blog в **Design → Layouts**, включително на началната страница. Симптомът е PHP `Allowed memory size exhausted`.\n\nПричината е, че OpenCart 3 може да извика single-instance module без `$setting`, а старият source controller стартираше пълния `listing()` renderer. Версия 1.2.1 премества layout/full-page detection директно в catalog controller source и добавя static request-level recursion guard.\n\nСлед обновяване изпълнете **Extensions → Modifications → Refresh** и изчистете theme/cache.\n\n## English\n\nFixes critical recursive rendering when ProBG Blog is assigned through **Design → Layouts**, including the home page. The symptom is PHP `Allowed memory size exhausted`. Layout/full-page detection now lives directly in the catalog controller source and uses a static request-level recursion guard.\n''')
+### fix — Български
 
-          for f in ['docs/.pr-ready-1.2.1','docs/.sync-1.2.1','docs/.sync2-1.2.1','docs/.trigger-1.2.1']:
-              q = Path(f)
-              if q.exists(): q.unlink()
+- Коригирано е критично рекурсивно зареждане при добавяне на ProBG Blog **Меню** или **Последни статии** в `Design → Layouts`, включително на началната страница.
+- Коригиран е PHP `Allowed memory size exhausted`, причинен от стария `$setting`-базиран source controller flow.
+- Layout/full-page detection вече е директно в catalog controller source.
+- Добавен е static request-level recursion guard преди зареждане на layout позициите.
+- Старият OCMOD workaround за recursion detection е премахнат.
+
+### fix — English
+
+- Fixed critical recursive rendering when ProBG Blog **Menu** or **Latest Articles** is assigned in `Design → Layouts`, including the home page.
+- Fixed PHP `Allowed memory size exhausted` caused by the legacy `$setting`-based source controller flow.
+- Layout/full-page detection now lives directly in the catalog controller source.
+- Added a static request-level recursion guard before layout positions are loaded.
+- Removed the obsolete OCMOD recursion-detection workaround.
+
+'''
+              c.write_text('# Changelog\n\n' + entry + t[len('# Changelog\n\n'):])
           PY
 
-          php -l upload/catalog/controller/extension/module/probg_blog.php
-          php -r '$x=simplexml_load_file("install.xml"); if (!$x || (string)$x->version !== "1.2.1") exit(1);'
+          grep -q '## \[1.2.1\]' CHANGELOG.md
+          grep -q 'Version 1.2.1' upload/admin/language/en-gb/extension/module/probg_blog.php
 
-      - name: Commit
+      - name: Commit docs
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add -A
-          git commit -m 'fix: finalize ProBG Blog 1.2.1 recursion repair'
+          git add CHANGELOG.md upload/admin/language/bg-bg/extension/module/probg_blog.php upload/admin/language/en-gb/extension/module/probg_blog.php
+          git commit -m 'docs: document ProBG Blog 1.2.1 recursion fix'
           git push origin HEAD:fix/1.2.1-layout-recursion-source
