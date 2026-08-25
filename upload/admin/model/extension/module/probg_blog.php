@@ -12,7 +12,7 @@ class ModelExtensionModuleProbgBlog extends Model {
         $this->ensureArticleRelatedSchema();
         $this->load->model('setting/setting');
         if ($this->config->get('module_probg_blog_version') === null) {
-            $this->model_setting_setting->editSetting('module_probg_blog', array('module_probg_blog_status'=>0,'module_probg_blog_sort'=>'date','module_probg_blog_limit'=>10,'module_probg_blog_image_list_width'=>400,'module_probg_blog_image_list_height'=>260,'module_probg_blog_image_article_width'=>900,'module_probg_blog_image_article_height'=>600,'module_probg_blog_image_gallery_width'=>300,'module_probg_blog_image_gallery_height'=>220,'module_probg_blog_default_image'=>'','module_probg_blog_sitemap'=>1,'module_probg_blog_cache'=>1,'module_probg_blog_version'=>'1.3.0'));
+            $this->model_setting_setting->editSetting('module_probg_blog', array('module_probg_blog_status'=>0,'module_probg_blog_sort'=>'date','module_probg_blog_limit'=>10,'module_probg_blog_image_list_width'=>400,'module_probg_blog_image_list_height'=>260,'module_probg_blog_image_article_width'=>900,'module_probg_blog_image_article_height'=>600,'module_probg_blog_image_gallery_width'=>300,'module_probg_blog_image_gallery_height'=>220,'module_probg_blog_default_image'=>'','module_probg_blog_sitemap'=>1,'module_probg_blog_cache'=>1,'module_probg_blog_version'=>'1.4.0'));
         }
     }
 
@@ -84,7 +84,7 @@ class ModelExtensionModuleProbgBlog extends Model {
 
         $this->load->model('setting/setting');
         $settings = $this->model_setting_setting->getSetting('module_probg_blog');
-        $settings['module_probg_blog_version'] = '1.3.0';
+        $settings['module_probg_blog_version'] = '1.4.0';
         $this->model_setting_setting->editSetting('module_probg_blog', $settings);
         $this->cache->delete('probg_blog');
     }
