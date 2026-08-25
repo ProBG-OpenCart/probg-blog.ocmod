@@ -24,3 +24,4 @@
 - 1.2.0 — added a Fancybox-style article gallery lightbox using OpenCart 3's bundled Magnific Popup, with previous/next navigation, image counter, keyboard controls, responsive styling and graceful fallback to direct image links.
 - 1.2.1 — source-level layout detection and static recursion guard prevent memory exhaustion when ProBG Blog is assigned to layouts.
 - Stage 23 / 1.3.0 — Unlimited OpenCart menu instances, fixed menu toggles/category filter, and responsive list/slider article output.
+- 1.4.0 — redesigned Menu administration as a searchable master/detail list with per-menu editing.

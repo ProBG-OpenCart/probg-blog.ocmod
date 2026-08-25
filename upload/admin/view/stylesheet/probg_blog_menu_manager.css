@@ -1,0 +1,108 @@
+#tab-menu.probg-blog-menu-manager-enhanced > .alert-info {
+    margin-bottom: 15px;
+}
+
+#probg-blog-menu-manager .panel-heading {
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+#probg-blog-menu-manager .panel-heading .panel-title {
+    float: none !important;
+    margin: 0;
+    line-height: 1.4;
+}
+
+#probg-blog-menu-manager #probg-blog-menu-add-host {
+    float: none !important;
+    margin-left: auto;
+}
+
+#probg-blog-menu-manager .probg-blog-menu-toolbar {
+    margin-bottom: 15px;
+}
+
+#probg-blog-menu-manager .table-responsive {
+    margin-bottom: 0;
+}
+
+#probg-blog-menu-manager .probg-blog-menu-table {
+    margin-bottom: 0;
+}
+
+#probg-blog-menu-manager .probg-blog-menu-table > thead > tr > th {
+    white-space: nowrap;
+    vertical-align: middle;
+    background: #f7f9fb;
+}
+
+#probg-blog-menu-manager .probg-blog-menu-table > tbody > tr > td {
+    vertical-align: middle;
+}
+
+#probg-blog-menu-manager .probg-blog-menu-content-badge {
+    display: inline-block;
+    margin: 2px 3px 2px 0;
+    font-weight: 500;
+}
+
+#probg-blog-menu-manager .probg-blog-menu-actions {
+    white-space: nowrap;
+    min-width: 92px;
+}
+
+#probg-blog-menu-manager .probg-blog-menu-save-note {
+    margin-top: 15px;
+    margin-bottom: 0;
+}
+
+#probg-blog-menu-editors.probg-blog-menu-editors-managed > .probg-blog-menu-editor {
+    margin-bottom: 0;
+}
+
+#probg-blog-menu-editors.probg-blog-menu-editors-managed > .probg-blog-menu-editor > .panel-heading {
+    min-height: 45px;
+}
+
+#probg-blog-menu-editors .button-probg-menu-list,
+#probg-blog-menu-editors .button-remove-probg-menu {
+    margin-top: -2px;
+}
+
+#probg-blog-menu-editors .probg-blog-menu-editor .panel-body {
+    padding-top: 20px;
+}
+
+#probg-blog-menu-count {
+    margin-left: 6px;
+    vertical-align: middle;
+}
+
+@media (max-width: 767px) {
+    #probg-blog-menu-manager .panel-heading {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    #probg-blog-menu-manager #probg-blog-menu-add-host {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    #probg-blog-menu-manager #probg-blog-menu-add-host .btn {
+        width: 100%;
+    }
+
+    #probg-blog-menu-manager .probg-blog-menu-toolbar .col-sm-6 {
+        width: 100%;
+    }
+
+    #probg-blog-menu-editors .button-probg-menu-list,
+    #probg-blog-menu-editors .button-remove-probg-menu {
+        margin-left: 5px;
+        margin-bottom: 5px;
+    }
+}

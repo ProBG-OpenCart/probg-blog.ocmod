@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.4.0] - 2026-08-25
+
+### feat — Български
+
+- Преработен е таб **Меню** като master/detail интерфейс.
+- Добавен е компактен списък с всички създадени менюта вместо едновременно показване на всички дълги формуляри.
+- Списъкът показва име, статус, активни секции, категория, List/Slider режим и лимит.
+- Добавени са търсене, **Редакция**, **Премахване** и **Към списъка**.
+- При редакция се показва само избраното меню.
+- **Добави меню** отваря директно editor за новото меню.
+- При validation error автоматично се отваря менюто с проблемното поле.
+- Съществуващите OpenCart module instances и Layout assignments не се променят.
+
+### feat — English
+
+- Redesigned the **Menu** tab as a master/detail interface.
+- Added a compact list of all menu instances instead of rendering every long form at once.
+- The list shows name, status, enabled content sections, category, List/Slider mode and article limit.
+- Added search, **Edit**, **Remove** and **Back to list** actions.
+- Only the selected menu editor is displayed while editing.
+- **Add menu** opens the new menu editor immediately.
+- Validation errors automatically open the affected menu.
+- Existing OpenCart module instances and Layout assignments are unchanged.
+
 ## [1.3.0] - 2026-08-25
 
 ### fix — Български
