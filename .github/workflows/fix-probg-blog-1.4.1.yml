@@ -16,99 +16,48 @@ jobs:
           ref: fix/1.4.1-disable-legacy-layout-fallback
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Apply 1.4.1 fix
         run: |
           python3 - <<'PY'
           from pathlib import Path
           import re
-
           p = Path('upload/catalog/controller/extension/module/probg_blog.php')
           s = p.read_text()
-          marker = """        $mode = $this->config->get('module_probg_blog_layout_output');
-"""
-          guard = """        // Since 1.3.0 all layout output is rendered by explicit module instances.
-        // If migration has completed, a leftover bare `probg_blog` layout row must not
-        // render the legacy fallback as a second block next to a selected menu instance.
-        if ($this->config->get('module_probg_blog_instances_migrated')) {
-            return '';
-        }
-
-"""
+          marker = "        $mode = $this->config->get('module_probg_blog_layout_output');\n"
+          guard = "        // Since 1.3.0 all layout output is rendered by explicit module instances.\n        // A leftover bare probg_blog layout row must not render a second fallback block.\n        if ($this->config->get('module_probg_blog_instances_migrated')) {\n            return '';\n        }\n\n"
           if guard not in s:
-              if marker not in s:
-                  raise SystemExit('catalog module fallback marker not found')
+              if marker not in s: raise SystemExit('catalog fallback marker not found')
               s = s.replace(marker, guard + marker, 1)
           p.write_text(s)
-
-          controller = Path('upload/admin/controller/extension/module/probg_blog.php')
-          s = controller.read_text()
-          s = s.replace("module_probg_blog_version') !== '1.4.0'", "module_probg_blog_version') !== '1.4.1'")
-          s = s.replace("['module_probg_blog_version'] = '1.4.0'", "['module_probg_blog_version'] = '1.4.1'")
-          s = s.replace("$data['stage'] = '24';", "$data['stage'] = '25';")
-          s = s.replace("$data['version'] = '1.4.0';", "$data['version'] = '1.4.1';")
-          controller.write_text(s)
-
-          model = Path('upload/admin/model/extension/module/probg_blog.php')
-          s = model.read_text()
-          s = s.replace("module_probg_blog_version'=>'1.4.0'", "module_probg_blog_version'=>'1.4.1'")
-          s = s.replace("['module_probg_blog_version'] = '1.4.0'", "['module_probg_blog_version'] = '1.4.1'")
-          model.write_text(s)
-
-          install = Path('install.xml')
-          s = install.read_text().replace('<version>1.4.0</version>', '<version>1.4.1</version>', 1)
-          install.write_text(s)
-
-          langs = {
-            'upload/admin/language/bg-bg/extension/module/probg_blog.php': 'Версия 1.4.1 премахва двойното показване на ProBG Blog в Layouts, като изключва legacy fallback-а след миграция към module instances.',
-            'upload/admin/language/en-gb/extension/module/probg_blog.php': 'Version 1.4.1 prevents duplicate ProBG Blog blocks in Layouts by disabling the legacy fallback after module-instance migration.'
-          }
-          for path, text in langs.items():
-              q = Path(path)
-              data = q.read_text()
-              data, n = re.subn(r"\$_\['text_stage_info'\]='[^']*';", "$_['text_stage_info']='" + text + "';", data, count=1)
-              if n != 1:
-                  raise SystemExit('stage info marker missing: ' + path)
-              q.write_text(data)
-
-          changelog = Path('CHANGELOG.md')
-          data = changelog.read_text()
-          entry = '''## [1.4.1] - 2026-08-25
-
-### fix — Български
-
-- Коригирано е двойното показване на ProBG Blog блокове в една layout позиция след активиране на нов menu instance.
-- След завършена миграция към `probg_blog.<module_id>` catalog controller-ът вече не рендерира legacy fallback за остатъчен гол `probg_blog` layout запис.
-- Директните blog/category/article страници и валидните menu/latest-articles instances не се променят.
-
-### fix — English
-
-- Fixed duplicate ProBG Blog blocks appearing in the same layout position after enabling a menu instance.
-- After migration to `probg_blog.<module_id>` is complete, the catalog controller no longer renders the legacy fallback for a leftover bare `probg_blog` layout entry.
-- Direct blog/category/article pages and valid menu/latest-articles instances are unchanged.
-
-'''
-          if not data.startswith('# Changelog\n\n## [1.4.1]'):
-              data = data.replace('# Changelog\n\n', '# Changelog\n\n' + entry, 1)
-          changelog.write_text(data)
-
-          docs = Path('docs/1.4.1.md')
-          docs.write_text('''# ProBG Blog 1.4.1\n\n## Български\n\nВерсия 1.4.1 коригира дублиране на frontend блока, когато ново ProBG Blog menu instance е добавено в Layout, а в същата позиция е останал legacy запис `probg_blog`.\n\nСлед миграцията от 1.3.0 всички frontend layout блокове трябва да се извикват чрез конкретен код `probg_blog.<module_id>`. Ако migration marker-ът е активен, bare `probg_blog` извикване вече връща празен резултат и не рендерира втори fallback блок.\n\nТова не променя директната `/blog` страница, категории, статии или валидни menu/latest-articles instances.\n\n## English\n\nVersion 1.4.1 fixes duplicate storefront blocks caused by a leftover bare `probg_blog` layout entry alongside a migrated `probg_blog.<module_id>` instance. Once module-instance migration is complete, the legacy bare-layout fallback is disabled. Direct blog pages and valid instances remain unchanged.\n''')
-
-          stages = Path('docs/STAGES.md')
-          data = stages.read_text()
-          line = '- 1.4.1 — disabled the legacy bare-layout fallback after module-instance migration to prevent duplicate storefront blocks.\n'
-          if line not in data:
-              data += ('\n' if not data.endswith('\n') else '') + line
-          stages.write_text(data)
+          p = Path('upload/admin/controller/extension/module/probg_blog.php')
+          s = p.read_text().replace("module_probg_blog_version') !== '1.4.0'", "module_probg_blog_version') !== '1.4.1'").replace("['module_probg_blog_version'] = '1.4.0'", "['module_probg_blog_version'] = '1.4.1'").replace("$data['stage'] = '24';", "$data['stage'] = '25';").replace("$data['version'] = '1.4.0';", "$data['version'] = '1.4.1';")
+          p.write_text(s)
+          p = Path('upload/admin/model/extension/module/probg_blog.php')
+          s = p.read_text().replace("module_probg_blog_version'=>'1.4.0'", "module_probg_blog_version'=>'1.4.1'").replace("['module_probg_blog_version'] = '1.4.0'", "['module_probg_blog_version'] = '1.4.1'")
+          p.write_text(s)
+          p = Path('install.xml')
+          p.write_text(p.read_text().replace('<version>1.4.0</version>', '<version>1.4.1</version>', 1))
+          for path, text in {
+              'upload/admin/language/bg-bg/extension/module/probg_blog.php':'Версия 1.4.1 премахва двойното показване на ProBG Blog в Layouts, като изключва legacy fallback-а след миграция към module instances.',
+              'upload/admin/language/en-gb/extension/module/probg_blog.php':'Version 1.4.1 prevents duplicate ProBG Blog blocks in Layouts by disabling the legacy fallback after module-instance migration.'
+          }.items():
+              p = Path(path); s = p.read_text(); s, n = re.subn(r"\$_\['text_stage_info'\]='[^']*';", "$_['text_stage_info']='" + text + "';", s, count=1)
+              if n != 1: raise SystemExit('stage info marker missing: ' + path)
+              p.write_text(s)
+          p = Path('CHANGELOG.md'); s = p.read_text()
+          entry = "## [1.4.1] - 2026-08-25\n\n### fix — Български\n\n- Коригирано е двойното показване на ProBG Blog блокове след активиране на menu instance.\n- След миграция към `probg_blog.<module_id>` остатъчен гол `probg_blog` layout запис вече не рендерира legacy fallback.\n- Директните blog/category/article страници и валидните menu/latest-articles instances не се променят.\n\n### fix — English\n\n- Fixed duplicate ProBG Blog blocks after enabling a menu instance.\n- After migration to `probg_blog.<module_id>`, a leftover bare `probg_blog` layout entry no longer renders the legacy fallback.\n- Direct blog/category/article pages and valid menu/latest-articles instances are unchanged.\n\n"
+          if '## [1.4.1]' not in s: s = s.replace('# Changelog\n\n', '# Changelog\n\n' + entry, 1)
+          p.write_text(s)
+          Path('docs/1.4.1.md').write_text("# ProBG Blog 1.4.1\n\n## Български\n\nВерсия 1.4.1 коригира дублиране на frontend блока, когато ново ProBG Blog menu instance е добавено в Layout, а е останал legacy запис `probg_blog`. След migration към `probg_blog.<module_id>` bare layout извикването вече връща празен резултат. Директните blog страници и валидните instances не се променят.\n\n## English\n\nVersion 1.4.1 fixes duplicate storefront blocks caused by a leftover bare `probg_blog` layout entry alongside a migrated `probg_blog.<module_id>` instance. Once migration is complete, the legacy fallback is disabled.\n")
+          p = Path('docs/STAGES.md'); s = p.read_text(); line = '- 1.4.1 — disabled the legacy bare-layout fallback after module-instance migration to prevent duplicate storefront blocks.\n'
+          if line not in s: s += ('\n' if not s.endswith('\n') else '') + line
+          p.write_text(s)
           PY
-
       - name: Validate
         run: |
           find upload -name '*.php' -print0 | xargs -0 -n1 php -l
-          php -r '$x=simplexml_load_file("install.xml"); if (!$x || (string)$x->version !== "1.4.1") { exit(1); }'
+          php -r '$x=simplexml_load_file("install.xml"); if (!$x || (string)$x->version !== "1.4.1") exit(1);'
           grep -q "module_probg_blog_instances_migrated" upload/catalog/controller/extension/module/probg_blog.php
-
       - name: Commit feature branch
         run: |
           git config user.name 'github-actions[bot]'
@@ -116,7 +65,6 @@ jobs:
           git add CHANGELOG.md docs install.xml upload
           git commit -m 'fix: prevent duplicate legacy layout output (1.4.1)'
           git push origin HEAD:fix/1.4.1-disable-legacy-layout-fallback
-
       - name: Remove one-off workflow
         run: |
           git fetch origin main
