@@ -2,193 +2,98 @@
 
 [![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-Revolut-191C1F?logo=revolut&logoColor=white)](https://revolut.me/vtotev)
 
-`ProBG Blog` е самостоятелен многоезичен блог модул за OpenCart 3 с категории, статии, SEO URL, Open Graph, JSON-LD, sitemap, кеширане, свързани продукти и вградено frontend меню.
+**Current version:** `1.4.2`  
+**Status:** Stable  
+**OpenCart:** `3.0.2.x` / `3.0.3.x`
 
-## Промени във версия 1.3.0
+---
 
-- Неограничен брой отделни frontend менюта чрез стандартни OpenCart module instances.
-- Коригирани са show/hide настройките и филтърът по категория на статиите.
-- Всеки menu instance има собствено име и може да бъде добавян независимо в **Design → Layouts**.
-- Запазен е отделен системен instance **ProBG Blog - Latest Articles** за досегашния блок с последни статии.
-- Добавени са режими **Списък** и **Слайдър** за статиите.
-- Slider режимът поддържа responsive multi-item layout, навигация, dots, autoplay и touch swipe без външен CDN.
+# Български
 
-## Changes in version 1.3.0
+## Кратко описание
 
-- Unlimited independent frontend menus implemented as standard OpenCart module instances.
-- Fixed menu show/hide settings and article category filtering.
-- Every menu instance has its own admin name and can be selected independently in **Design → Layouts**.
-- A dedicated **ProBG Blog - Latest Articles** system instance preserves the existing latest-articles layout block.
-- Added **List** and **Slider** article display modes.
-- Slider mode supports responsive multi-item layout, navigation, dots, autoplay and touch swipe without an external CDN.
+**ProBG Blog** е цялостен многоезичен блог модул за OpenCart 3, който добавя категории, статии, SEO URL адреси, Open Graph/Twitter Cards, JSON-LD, sitemap, галерия с lightbox, свързани продукти и неограничен брой frontend менюта със списък или слайдър.
 
-## Промени във версия 1.0.3
+## Описание
 
-- Добавено е липсващото OpenCart parent permission право `extension/probg_blog`.
-- Това е route-ът, който OpenCart 3 реално проверява при отваряне на `extension/probg_blog/category` и `extension/probg_blog/article`.
-- Запазени са отделните `modify` права за CRUD операциите на категории и статии.
-- Не се модифицира глобалната OpenCart permission логика.
+**ProBG Blog** превръща OpenCart 3 в пълноценна платформа за публикуване на новини, статии, ръководства, полезно съдържание и SEO текстове, без необходимост от външна CMS система. Модулът е интегриран директно в администрацията на OpenCart и използва стандартните механизми за езици, магазини, layouts, SEO URL адреси, изображения и продукти.
 
-## Changes in version 1.0.3
+Категориите и статиите са многоезични и разполагат със собствени мета данни и SEO адреси. Статиите могат да съдържат кратко и пълно HTML описание, основно изображение, галерия с неограничени допълнителни изображения и свързани продукти от каталога. Галерията се отваря в responsive lightbox с навигация между изображенията.
 
-- Added the missing OpenCart parent permission `extension/probg_blog`.
-- This is the route OpenCart 3 actually checks when opening `extension/probg_blog/category` and `extension/probg_blog/article`.
-- Existing dedicated `modify` permissions for category/article CRUD operations are preserved.
-- The global OpenCart permission logic is not modified.
+Модулът предоставя собствена начална страница на блога, страници за категории и статии, breadcrumbs, пагинация, canonical адреси, Open Graph, Twitter Cards и структурирани JSON-LD данни. SEO URL адресите могат да се генерират автоматично с транслитерация и се съхраняват в стандартната OpenCart таблица `seo_url`.
 
-## Промени във версия 1.0.1
+За OpenCart Layouts могат да се създават **неограничен брой отделни ProBG Blog менюта**. Всяко меню има собствени настройки за заглавие, показване на линк към блога, категории и статии, филтър по категория, лимит, подредба и режим **Списък** или **Слайдър**. И двата режима използват еднакви article cards, а slider режимът добавя responsive навигация, dots, autoplay и touch swipe.
 
-- Премахнати са старите отделни OpenCart layout модули **ProBG Blog — Статии** и **ProBG Blog — Категории**.
-- В **Extensions → Extensions → Modules** остава само една инсталация: **ProBG Blog**.
-- Административните страници за категории и статии остават в `extension/probg_blog/` като вътрешни CRUD routes и не са отделни инсталирани модули.
-- Премахнати са legacy controller, language и Twig файловете за двата отделни layout модула.
-- Премахнати са legacy permissions routes от инсталацията.
-- При обновяване се почистват старите `module` и `layout_module` записи за `probg_blog_articles` и `probg_blog_categories`.
-- Няма промяна в блог таблиците и няма загуба на категории, статии, изображения, SEO URL или свързани продукти.
+## Основни възможности
 
-## Changes in version 1.0.1
+- Пълноценен блог за OpenCart 3 без външна CMS.
+- Многоезични категории и статии.
+- HTML редактор за описанията.
+- Кратко и пълно описание на статия.
+- Основно изображение и неограничена галерия.
+- Lightbox за галерията с предишно/следващо изображение и клавиатурна навигация.
+- Свързани продукти чрез стандартния OpenCart autocomplete.
+- Автоматични и ръчни SEO URL адреси по език и магазин.
+- Българска транслитерация и защита от конфликт на SEO URL.
+- Meta Title, Meta Description и Meta Keywords.
+- Canonical URL и 301 пренасочване към правилния йерархичен адрес.
+- Open Graph и Twitter Cards.
+- JSON-LD `Blog`, `BlogPosting`, `BreadcrumbList` и `CollectionPage`.
+- Интеграция със стандартния OpenCart Google Sitemap.
+- Самостоятелен blog sitemap endpoint.
+- Multi-store поддръжка за категории и SEO записи.
+- Layout Override за категории и статии.
+- Catalog кеширане по магазин, език и тип заявка.
+- Неограничен брой frontend menu instances.
+- Отделни настройки за всяко меню.
+- Включване/изключване на линка към блога, категориите и статиите.
+- Филтриране на статиите в меню по избрана категория.
+- Режим **Списък** с responsive article cards.
+- Режим **Слайдър** със същите article cards.
+- Responsive multi-item slider със стрелки, dots, autoplay и touch swipe.
+- Системен instance **ProBG Blog - Latest Articles** за блок с последни статии.
+- Bootstrap 5 ориентирани storefront шаблони с cards, breadcrumbs и responsive grid.
+- Стандартна OpenCart 3 административна интеграция.
 
-- Removed the legacy standalone **ProBG Blog — Articles** and **ProBG Blog — Categories** OpenCart layout modules.
-- **Extensions → Extensions → Modules** now contains a single installable extension: **ProBG Blog**.
-- Category and article administration remains under `extension/probg_blog/` as internal CRUD routes and is not installed as separate modules.
-- Removed legacy controller, language and Twig files belonging to the two old layout modules.
-- Removed legacy permission routes from installation.
-- Upgrade cleanup removes stale `module` and `layout_module` rows for `probg_blog_articles` and `probg_blog_categories`.
-- No blog database schema is changed and no category, article, image, SEO URL or related-product data is removed.
+## Документация
 
-## Версия и съвместимост
+### Инсталация
 
-- Версия: `1.3.0`
-- Статус: **Stable**
-- Целева съвместимост: OpenCart `3.0.2.x` и `3.0.3.x`
-- PHP: код, съвместим с типичните PHP 7.x среди за OpenCart 3
-- Администрация: стандартна OpenCart 3 / Bootstrap 3 структура
-- Storefront шаблони: стандартната `default` тема и съвместими теми, които запазват OpenCart 3 template hooks
+1. Изтеглете `probg-blog-1.4.2.ocmod.zip` от GitHub Release или директорията `dist/`.
+2. Отворете **Extensions → Installer** и качете OCMOD ZIP пакета.
+3. Отворете **Extensions → Modifications** и натиснете **Refresh**.
+4. Отворете **Extensions → Extensions → Modules** и инсталирайте **ProBG Blog**.
+5. Отворете **ProBG Blog → Настройки** и конфигурирайте основните данни, SEO, изображенията и интеграциите.
+6. Създайте категории от **ProBG Blog → Категории**.
+7. Създайте статии от **ProBG Blog → Статии**.
+8. При необходимост създайте едно или повече менюта от **ProBG Blog → Настройки → Меню** и ги добавете в **Design → Layouts**.
+9. Уверете се, че SEO URL и `.htaccess` са активирани в OpenCart.
 
-## Една инсталация
+### Настройки
 
-Frontend менюто е част от **ProBG Blog**. За него не се добавя отделно разширение в **Extensions → Extensions → Modules** и не се изпълнява второ Install действие.
+Основните настройки на модула са организирани в секции:
 
-След инсталиране ProBG Blog има основни административни табове:
+- **Общи** — статус, подредба и брой статии на страница;
+- **Данни** — многоезично заглавие, описание и SEO данни за основната блог секция;
+- **Меню** — управление на неограничен брой frontend менюта;
+- **Изображения** — размери за списък, статия и галерия;
+- **Интеграции и производителност** — sitemap и кеширане.
 
-- **Настройки**
-- **Категории**
-- **Статии**
-
-Табът **Категории** съдържа списък на всички категории, филтри, добавяне, редакция и групово изтриване.
-
-Табът **Статии** съдържа списък на всички статии, филтри, добавяне, редакция и групово изтриване. Списъкът и формата за статия използват същата основна навигация **Настройки / Категории / Статии**.
-
-## Настройки на блог секцията
-
-В таб **Настройки** са налични вътрешни секции:
-
-- **Общи**
-- **Данни**
-- **Меню**
-- **Изображения**
-- **Интеграции и производителност**
-
-### Общи
-
-- статус;
-- **Изглед в layout**:
-  - **Последни статии**;
-  - **Меню**;
-- подреждане на статиите по дата или `sort_order`;
-- брой статии на страница.
-
-При обновяване от 0.11.0 стойността **Изглед в layout** автоматично остава **Последни статии**, така че съществуващите layout позиции не променят изгледа си без изрична настройка.
-
-### Данни
-
-Многоезични полета за основната блог секция:
-
-- заглавие;
-- HTML описание;
-- Meta Title;
-- Meta Description;
-- Meta Keywords;
-- SEO URL.
-
-### Меню
-
-Менюто се конфигурира директно в текущия ProBG Blog модул и поддържа:
-
-- **Заглавие на менюто** — многоезично;
-- **Покажи линк към блога** — включване/изключване;
-- **Покажи категории** — включване/изключване;
-- **Покажи статии** — включване/изключване;
-- **Категория за статиите** — всички категории или конкретна категория;
-- **Брой статии в менюто** — от 1 до 100;
-- **Подредба на статиите в менюто** — по дата или `sort_order`.
-
-За да се използва навигационното меню, изберете **Настройки → Общи → Изглед в layout → Меню** и поставете текущия **ProBG Blog** модул в желаната позиция от **Design → Layouts**.
-
-Не се инсталира втори модул за менюто.
-
-### Изображения
-
-- изображение по подразбиране;
-- размер на изображението в списък;
-- размер на основното изображение на статия;
-- размер на изображенията в галерията.
-
-### Интеграции и производителност
-
-- добавяне в sitemap;
-- catalog кеширане.
-
-## Категории
-
-### Таб „Общи“
+### Категории
 
 Всяка категория поддържа:
 
-- **Заглавие** — многоезично;
-- **Описание** — многоезично, със Summernote HTML редактор;
-- **SEO URL** — многоезично;
-- **Тагове** — многоезични;
-- **Мета заглавие** — многоезично;
-- **Мета описание** — многоезично;
-- **Ключови думи** — многоезични;
-- **Подредба**;
-- **Статус**.
+- многоезично заглавие;
+- HTML описание;
+- многоезични SEO URL, Meta Title, Meta Description и Meta Keywords;
+- тагове;
+- статус и подредба;
+- присвояване към магазини;
+- Layout Override.
 
-Ако SEO URL е празно, при запис се генерира автоматично от заглавието чрез транслитерация. Например:
+Ако SEO URL е празно, модулът го генерира автоматично чрез транслитерация. Ръчно въведен SEO URL не се презаписва. При конфликт автоматично генерираният адрес получава числов суфикс.
 
-```text
-Полезни съвети → polezni-saveti
-```
-
-Ако Meta Title е празно, се записва стойността от Заглавие.
-
-Ръчно въведен SEO URL не се презаписва. При конфликт автоматично генерираният адрес получава числов суфикс.
-
-### Таб „Настройки“
-
-Категориите използват стандартен OpenCart multi-store/design модел:
-
-- избор на **Магазини**;
-- **Layout Override** за всеки магазин;
-- информационни полета за дата на добавяне и обновяване.
-
-При обновяване от версия 0.8.0 съществуващите категории автоматично се присвояват към всички текущи магазини, за да не изчезнат от публичната част.
-
-Категориите и статиите се филтрират по текущия `store_id`. Layout Override на категорията се прилага и върху страниците на статиите в нея.
-
-## Статии
-
-Таб **Статии** предоставя:
-
-- списък на всички статии;
-- филтри по заглавие, категория, статус и период на добавяне;
-- добавяне на нова статия;
-- редакция на съществуваща статия;
-- групово изтриване;
-- административна пагинация.
-
-Формата за статия е разделена на вътрешни табове **Съдържание / Данни / Изображения / Свързани продукти**.
+### Статии
 
 Всяка статия поддържа:
 
@@ -197,136 +102,281 @@ Frontend менюто е част от **ProBG Blog**. За него не се �
 - многоезично кратко HTML описание;
 - многоезично пълно HTML описание;
 - основно изображение;
-- неограничени допълнителни изображения с подредба;
-- многоезични Meta Title, Meta Description и Meta Keywords;
-- многоезичен SEO URL;
-- **свързани продукти чрез стандартния OpenCart autocomplete избор**;
-- подредба и статус;
+- неограничени допълнителни изображения;
+- lightbox галерия;
+- многоезични SEO URL, Meta Title, Meta Description и Meta Keywords;
+- свързани продукти;
+- статус и подредба;
 - автоматични дати на добавяне и обновяване.
 
-### Свързани продукти
+Свързаните продукти се избират чрез стандартния OpenCart autocomplete и се визуализират под съдържанието на статията.
 
-В таб **Свързани продукти** започнете да въвеждате името на продукт. Търсенето използва стандартния административен route `catalog/product/autocomplete` на OpenCart.
+### Менюта и Layouts
 
-- могат да бъдат добавяни множество продукти;
-- повторно избиране на един и същ продукт не създава дубликат;
-- избран продукт може да бъде премахнат с иконата за премахване;
-- връзките се записват при запис на статията;
-- при изтриване на статията връзките се изтриват автоматично;
-- в публичната страница на статията избраните продукти се показват под съдържанието със стандартните OpenCart `product-layout` / `product-thumb` класове;
-- публично се показват само продукти, които стандартният catalog product model може да зареди за текущия магазин.
+В таб **Меню** се показва компактен списък с всички създадени менюта. Всяко меню е стандартен OpenCart module instance и може да бъде добавено независимо в **Design → Layouts**.
 
-Ако Meta Title е празно, се записва стойността от Заглавие.
+Всяко меню поддържа:
 
-SEO URL на статията се генерира във формат:
+- административно име;
+- многоезично заглавие;
+- статус;
+- **Покажи линк към блога**;
+- **Покажи категории**;
+- **Покажи статии**;
+- категория за филтриране на статиите;
+- лимит;
+- подредба по дата или `sort_order`;
+- изглед **Списък** или **Слайдър**;
+- при Slider — брой елементи, autoplay и интервал.
 
-```text
-article-id-transliterated-title
-```
+При **Списък** статиите се визуализират като статичен responsive grid със същите cards, използвани от слайдъра. При **Слайдър** се добавят стрелки, dots, autoplay, responsive брой елементи и touch swipe.
 
-Пример:
+За блок с последни статии се използва системният instance **ProBG Blog - Latest Articles**.
 
-```text
-38-kak-da-optimizirame-opencart
-```
+### Галерия и Lightbox
 
-Ръчно въведен SEO URL не се презаписва. При multi-store категория SEO записите на статиите се поддържат за магазините, към които е присвоена категорията.
+Допълнителните изображения към статия се показват в responsive gallery grid. При клик оригиналното изображение се отваря в lightbox с:
 
-## URL структура
+- предишно/следващо изображение;
+- брояч;
+- затваряне с `Esc`;
+- навигация с клавиатура;
+- responsive поведение за мобилни устройства.
 
-Публичната структура е:
+### SEO и URL структура
 
-```text
-url-section
-url-section/url-category
-url-section/url-category/url-article
-```
-
-Пример:
+Публичната URL структура е йерархична:
 
 ```text
 /blog
-/blog/polezni-saveti
-/blog/polezni-saveti/38-kak-da-optimizirame-opencart
+/blog/category
+/blog/category/article
 ```
 
-SEO стойностите се съхраняват в стандартната OpenCart таблица `{DB_PREFIX}seo_url` по език и магазин.
+Модулът поддържа:
 
-## Storefront
-
-Реализирани са:
-
-- начална страница на блога;
-- списък с активни категории;
-- страница на категория;
-- страница на статия;
-- breadcrumbs;
-- пагинация;
-- основно/default изображение;
-- допълнителна галерия;
-- свързани продукти под статията;
-- вградено навигационно меню;
-- стандартна OpenCart 404 обработка;
-- филтриране по текущ магазин и език.
-
-## SEO и canonical
-
-- автоматичен Meta Title fallback;
-- транслитерация на българска кирилица;
-- автоматични SEO URL адреси;
-- проверка за конфликт на SEO URL по магазин и език;
-- canonical URL за секция, категории, статии и пагинация;
-- 301 пренасочване към правилния йерархичен адрес;
-- корекция при статия, отворена през грешна категория.
-
-## Open Graph, Twitter Cards и JSON-LD
-
-Пълните блог страници добавят:
-
-- Open Graph metadata;
+- автоматична българска транслитерация;
+- ръчно зададени SEO URL адреси;
+- проверка за конфликт по език и магазин;
+- canonical адреси;
+- 301 пренасочване към правилния йерархичен URL;
+- Open Graph;
 - Twitter Cards;
-- social image fallback;
-- JSON-LD `Blog`;
-- JSON-LD `BlogPosting`;
-- JSON-LD `BreadcrumbList`;
-- JSON-LD `CollectionPage`;
-- `Organization` publisher данни.
+- JSON-LD структурирани данни.
 
-## Sitemap
+SEO стойностите се записват в стандартната OpenCart таблица `{DB_PREFIX}seo_url`.
 
-При включена настройка модулът:
+### Sitemap
 
-- се интегрира със стандартния OpenCart Google Sitemap;
-- предоставя самостоятелен sitemap на:
+При включена настройка ProBG Blog се интегрира със стандартния OpenCart Google Sitemap и предоставя собствен sitemap endpoint:
 
 ```text
 index.php?route=extension/feed/probg_blog_sitemap
 ```
 
-Sitemap съдържа само активни записи, валидни за текущия магазин и език.
+### Обновяване
 
-## Кеширане
+При обновяване **не деинсталирайте модула**, защото деинсталацията премахва блог таблиците.
 
-Catalog данните се кешират по:
+1. Качете новия OCMOD пакет през **Extensions → Installer**.
+2. Отворете **Extensions → Modifications** и натиснете **Refresh**.
+3. Отворете **ProBG Blog → Настройки** поне веднъж, за да се изпълнят необходимите migration стъпки.
+4. Изчистете theme/cache при необходимост.
 
-- магазин;
-- език;
-- тип заявка.
+### Деинсталация
 
-Кешът се изчиства при промяна на категории, статии или настройки.
+Деинсталацията премахва блог таблиците, настройките и SEO записите на модула.
 
-## Layout output
+**Внимание:** всички въведени блог данни се изтриват.
 
-Пакетът запазва съществуващите layout възможности, а frontend менюто не добавя нов installable extension. Текущият **ProBG Blog** output може да бъде превключван между:
+---
 
-1. **Последни статии**;
-2. **Меню**.
+# English
 
-Настройката се управлява от **ProBG Blog → Настройки → Общи → Изглед в layout**.
+## Short description
 
-## База данни
+**ProBG Blog** is a complete multilingual blog extension for OpenCart 3 that adds categories, articles, SEO URLs, Open Graph/Twitter Cards, JSON-LD, sitemap integration, a lightbox gallery, related products, and unlimited frontend menus with List or Slider article layouts.
 
-Основни таблици:
+## Description
+
+**ProBG Blog** turns OpenCart 3 into a full content publishing platform for news, articles, guides, educational content, and SEO landing content without requiring an external CMS. The extension is integrated directly into the OpenCart administration and uses the platform's standard language, store, layout, SEO URL, image, and product systems.
+
+Categories and articles are multilingual and have their own metadata and SEO URLs. Articles support short and full HTML descriptions, a main image, an unlimited additional-image gallery, and related catalog products. Gallery images open in a responsive lightbox with previous/next navigation.
+
+The extension provides a dedicated blog home page, category pages, article pages, breadcrumbs, pagination, canonical URLs, Open Graph, Twitter Cards, and structured JSON-LD data. SEO URLs can be generated automatically with transliteration and are stored in OpenCart's standard `seo_url` table.
+
+For OpenCart Layouts you can create **unlimited independent ProBG Blog menu instances**. Every menu has its own title, blog-link/category/article visibility options, category filter, article limit, sorting, and **List** or **Slider** display mode. Both modes use the same article cards, while Slider mode adds responsive navigation, dots, autoplay, and touch swipe.
+
+## Main features
+
+- Complete blog functionality for OpenCart 3 without an external CMS.
+- Multilingual categories and articles.
+- HTML editor for content fields.
+- Short and full article descriptions.
+- Main image and unlimited article gallery.
+- Gallery lightbox with previous/next and keyboard navigation.
+- Related products through the standard OpenCart autocomplete.
+- Automatic and manual SEO URLs per language and store.
+- Bulgarian transliteration and SEO URL conflict protection.
+- Meta Title, Meta Description, and Meta Keywords.
+- Canonical URLs and 301 redirects to the correct hierarchical URL.
+- Open Graph and Twitter Cards.
+- JSON-LD `Blog`, `BlogPosting`, `BreadcrumbList`, and `CollectionPage` data.
+- OpenCart Google Sitemap integration.
+- Dedicated blog sitemap endpoint.
+- Multi-store support for categories and SEO records.
+- Layout Override support for categories and articles.
+- Catalog caching by store, language, and query type.
+- Unlimited frontend menu instances.
+- Independent settings for every menu.
+- Toggle blog link, categories, and articles independently.
+- Filter menu articles by a selected category.
+- **List** mode with responsive article cards.
+- **Slider** mode using the same article cards.
+- Responsive multi-item slider with arrows, dots, autoplay, and touch swipe.
+- Dedicated **ProBG Blog - Latest Articles** system instance for Layouts.
+- Bootstrap 5-oriented storefront templates with responsive cards, breadcrumbs, and grids.
+- Native OpenCart 3 administration integration.
+
+## Documentation
+
+### Installation
+
+1. Download `probg-blog-1.4.2.ocmod.zip` from the GitHub Release or the `dist/` directory.
+2. Open **Extensions → Installer** and upload the OCMOD ZIP package.
+3. Open **Extensions → Modifications** and click **Refresh**.
+4. Open **Extensions → Extensions → Modules** and install **ProBG Blog**.
+5. Open **ProBG Blog → Settings** and configure the general data, SEO, images, and integrations.
+6. Create categories under **ProBG Blog → Categories**.
+7. Create articles under **ProBG Blog → Articles**.
+8. When needed, create one or more menus under **ProBG Blog → Settings → Menu** and place them in **Design → Layouts**.
+9. Make sure OpenCart SEO URLs and `.htaccess` are enabled.
+
+### Settings
+
+The module settings are organized into sections:
+
+- **General** — status, article sorting, and articles per page;
+- **Data** — multilingual blog-section title, description, and SEO data;
+- **Menu** — unlimited frontend menu management;
+- **Images** — image dimensions for lists, articles, and galleries;
+- **Integrations & Performance** — sitemap and caching.
+
+### Categories
+
+Each category supports:
+
+- multilingual title;
+- HTML description;
+- multilingual SEO URL, Meta Title, Meta Description, and Meta Keywords;
+- tags;
+- status and sort order;
+- store assignments;
+- Layout Override.
+
+When the SEO URL is empty, the extension generates it automatically using transliteration. Manually entered URLs are preserved. Automatic URL conflicts receive a numeric suffix.
+
+### Articles
+
+Each article supports:
+
+- required primary category;
+- multilingual title;
+- multilingual short HTML description;
+- multilingual full HTML description;
+- main image;
+- unlimited additional images;
+- lightbox gallery;
+- multilingual SEO URL, Meta Title, Meta Description, and Meta Keywords;
+- related products;
+- status and sort order;
+- automatic created/modified dates.
+
+Related products are selected using the standard OpenCart autocomplete and are displayed below the article content.
+
+### Menus and Layouts
+
+The **Menu** tab provides a compact list of all created menu instances. Every menu is a standard OpenCart module instance and can be placed independently in **Design → Layouts**.
+
+Each menu supports:
+
+- administration name;
+- multilingual title;
+- status;
+- **Show blog link**;
+- **Show categories**;
+- **Show articles**;
+- article category filter;
+- limit;
+- date or `sort_order` sorting;
+- **List** or **Slider** article display;
+- Slider item count, autoplay, and interval.
+
+In **List** mode, articles are rendered as a static responsive grid using the same cards as Slider mode. **Slider** mode adds arrows, dots, autoplay, responsive item count, and touch swipe.
+
+Use the dedicated **ProBG Blog - Latest Articles** system instance for a latest-articles layout block.
+
+### Gallery and Lightbox
+
+Additional article images are displayed in a responsive gallery grid. Clicking an image opens the original image in a lightbox with:
+
+- previous/next navigation;
+- image counter;
+- `Esc` close support;
+- keyboard navigation;
+- responsive mobile behavior.
+
+### SEO and URL structure
+
+The public URL structure is hierarchical:
+
+```text
+/blog
+/blog/category
+/blog/category/article
+```
+
+The extension supports:
+
+- automatic Bulgarian transliteration;
+- manually defined SEO URLs;
+- conflict detection by language and store;
+- canonical URLs;
+- 301 redirects to the correct hierarchical URL;
+- Open Graph;
+- Twitter Cards;
+- JSON-LD structured data.
+
+SEO data is stored in OpenCart's standard `{DB_PREFIX}seo_url` table.
+
+### Sitemap
+
+When enabled, ProBG Blog integrates with the standard OpenCart Google Sitemap and provides a dedicated sitemap endpoint:
+
+```text
+index.php?route=extension/feed/probg_blog_sitemap
+```
+
+### Updating
+
+When upgrading, **do not uninstall the extension**, because uninstalling removes the blog database tables.
+
+1. Upload the new OCMOD package through **Extensions → Installer**.
+2. Open **Extensions → Modifications** and click **Refresh**.
+3. Open **ProBG Blog → Settings** at least once so required migration steps can run.
+4. Clear theme/cache if necessary.
+
+### Uninstalling
+
+Uninstalling removes the blog tables, module settings, and SEO records.
+
+**Warning:** all stored blog content is deleted.
+
+---
+
+## Database tables
+
+Main module tables:
 
 - `{DB_PREFIX}probg_blog_category`
 - `{DB_PREFIX}probg_blog_category_description`
@@ -337,54 +387,15 @@ Catalog данните се кешират по:
 - `{DB_PREFIX}probg_blog_article_image`
 - `{DB_PREFIX}probg_blog_article_related`
 
-SEO адресите се записват в стандартната `{DB_PREFIX}seo_url`.
+SEO URLs use OpenCart's standard `{DB_PREFIX}seo_url` table.
 
-## Инсталация
+## Changelog
 
-Готовият пакет е `probg-blog-1.0.0-beta.ocmod.zip`.
+See [`CHANGELOG.md`](CHANGELOG.md) for the full version history.
 
-1. Отворете **Extensions → Installer**.
-2. Качете OCMOD ZIP пакета.
-3. Отворете **Extensions → Modifications** и натиснете **Refresh**.
-4. Инсталирайте **ProBG Blog** от **Extensions → Extensions → Modules**.
-5. Отворете модула и конфигурирайте **Настройки**.
-6. Използвайте таб **Категории**, за да създадете категориите.
-7. Използвайте таб **Статии**, за да създавате и редактирате статиите.
-8. За frontend меню конфигурирайте **Настройки → Меню**, изберете **Общи → Изглед в layout → Меню** и поставете текущия ProBG Blog output в **Design → Layouts**.
-9. Уверете се, че SEO URL и `.htaccess` са активни.
+## Support development / Подкрепете разработката
 
-За менюто не се инсталира второ разширение.
-
-## Обновяване до 1.0.1
-
-Не деинсталирайте старата версия.
-
-1. Качете новия пакет през **Extensions → Installer**.
-2. Обновете **Extensions → Modifications**.
-3. Отворете **ProBG Blog → Настройки** поне веднъж.
-4. Миграцията ще премахне старите записи за отделните `probg_blog_articles` и `probg_blog_categories` модули и техните layout позиции.
-5. Използвайте единствения **ProBG Blog** модул за layout output и вграденото меню.
-
-Съществуващите категории, статии, изображения, свързани продукти, SEO URL адреси и multi-store настройки не се променят.
-
-### Upgrade to 1.0.1
-
-Do not uninstall the previous version. Upload the new package, refresh Modifications, and open **ProBG Blog → Settings** once to run the migration. Legacy `probg_blog_articles` / `probg_blog_categories` module instances and their layout assignments are removed automatically. Existing blog content and SEO data are preserved.
-
-## Деинсталация
-
-Деинсталацията премахва блог таблиците, настройките и SEO записите на модула.
-
-**Внимание:** всички въведени блог данни се изтриват.
-
-## Подкрепете разработката
-
-Ако модулът ви е полезен, можете да подкрепите неговата разработка чрез Revolut:
-
-[![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-Revolut-0075EB?style=for-the-badge&logo=revolut&logoColor=white)](https://revolut.me/vtotev)
-
-## Support development
-
-If this module is useful to you, you can support its development through Revolut:
+Ако модулът ви е полезен, можете да подкрепите разработката му чрез Revolut.  
+If this module is useful to you, you can support its development through Revolut.
 
 [![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-Revolut-0075EB?style=for-the-badge&logo=revolut&logoColor=white)](https://revolut.me/vtotev)
