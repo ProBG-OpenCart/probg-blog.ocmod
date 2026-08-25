@@ -25,3 +25,4 @@
 - 1.2.1 — source-level layout detection and static recursion guard prevent memory exhaustion when ProBG Blog is assigned to layouts.
 - Stage 23 / 1.3.0 — Unlimited OpenCart menu instances, fixed menu toggles/category filter, and responsive list/slider article output.
 - 1.4.0 — redesigned Menu administration as a searchable master/detail list with per-menu editing.
+- 1.4.1 — disabled the legacy bare-layout fallback after module-instance migration to prevent duplicate storefront blocks.
