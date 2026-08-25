@@ -22,6 +22,8 @@ jobs:
 
       - name: Extract and run feature patch
         run: |
+          mkdir -p upload/catalog/view/javascript
+          mkdir -p upload/catalog/view/theme/default/stylesheet
           git show origin/main:.github/workflows/feature-1.3.0-menus.yml > /tmp/source-workflow.yml
           python3 - <<'PY'
           from pathlib import Path
