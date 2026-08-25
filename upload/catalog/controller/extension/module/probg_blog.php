@@ -1,20 +1,34 @@
 <?php
 class ControllerExtensionModuleProbgBlog extends Controller {
+    private static $full_page_rendering = false;
+
     public function index($setting=array()) {
         if (!$this->config->get('module_probg_blog_status')) return '';
         $this->load->language('extension/module/probg_blog');
         $this->load->model('extension/probg_blog/blog');
         $this->load->model('tool/image');
 
-        if ($setting && !isset($this->request->get['probg_blog_category_id']) && !isset($this->request->get['probg_blog_article_id'])) {
-            return $this->module($setting);
-        }
-
         $category_id = isset($this->request->get['probg_blog_category_id']) ? (int)$this->request->get['probg_blog_category_id'] : 0;
         $article_id = isset($this->request->get['probg_blog_article_id']) ? (int)$this->request->get['probg_blog_article_id'] : 0;
-        if ($article_id) return $this->article($article_id, $category_id);
-        if ($category_id) return $this->category($category_id);
-        return $this->listing();
+        $route = isset($this->request->get['route']) ? (string)$this->request->get['route'] : '';
+        $is_blog_request = ($route === 'extension/module/probg_blog' || $category_id > 0 || $article_id > 0);
+
+        if (!$is_blog_request || self::$full_page_rendering) {
+            return $this->module(is_array($setting) ? $setting : array());
+        }
+
+        self::$full_page_rendering = true;
+
+        if ($article_id) {
+            $output = $this->article($article_id, $category_id);
+        } elseif ($category_id) {
+            $output = $this->category($category_id);
+        } else {
+            $output = $this->listing();
+        }
+
+        self::$full_page_rendering = false;
+        return $output;
     }
 
     private function listing() {

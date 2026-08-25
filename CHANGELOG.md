@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.2.1] - 2026-08-25
+
+### fix — Български
+
+- Коригирано е критично рекурсивно зареждане при добавяне на ProBG Blog **Меню** или **Последни статии** в `Design → Layouts`, включително на началната страница.
+- Коригиран е PHP `Allowed memory size exhausted`, причинен от стария `$setting`-базиран source controller flow.
+- Layout/full-page detection вече е директно в catalog controller source.
+- Добавен е static request-level recursion guard преди зареждане на layout позициите.
+- Старият OCMOD workaround за recursion detection е премахнат.
+
+### fix — English
+
+- Fixed critical recursive rendering when ProBG Blog **Menu** or **Latest Articles** is assigned in `Design → Layouts`, including the home page.
+- Fixed PHP `Allowed memory size exhausted` caused by the legacy `$setting`-based source controller flow.
+- Layout/full-page detection now lives directly in the catalog controller source.
+- Added a static request-level recursion guard before layout positions are loaded.
+- Removed the obsolete OCMOD recursion-detection workaround.
+
 ## [1.2.0] - 2026-08-24
 
 ### feat — Български
