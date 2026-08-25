@@ -18,11 +18,11 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             $this->grantPermissions();
         }
 
-        if ($this->config->get('module_probg_blog_version') !== '1.4.2') {
+        if ($this->config->get('module_probg_blog_version') !== '1.5.0') {
             $this->model_extension_module_probg_blog->migrate();
             $this->ensureModuleInstances();
             $settings = $this->model_setting_setting->getSetting('module_probg_blog');
-            $settings['module_probg_blog_version'] = '1.4.2';
+            $settings['module_probg_blog_version'] = '1.5.0';
             $this->model_setting_setting->editSetting('module_probg_blog', $settings);
         } else {
             $this->ensureModuleInstances();
@@ -46,7 +46,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             $this->mirrorLegacyMenuSettings($post, $menus);
             $post['module_probg_blog_instances_migrated'] = 1;
 
-            $post['module_probg_blog_version'] = '1.4.2';
+            $post['module_probg_blog_version'] = '1.5.0';
             $this->model_setting_setting->editSetting('module_probg_blog', $post);
             $this->model_extension_module_probg_blog->saveSectionSeo(isset($post['module_probg_blog_description']) ? $post['module_probg_blog_description'] : array());
             $this->session->data['success'] = $this->language->get('text_success');
@@ -63,8 +63,8 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             'entry_image_list', 'entry_image_article', 'entry_image_gallery', 'entry_sitemap', 'entry_cache',
             'entry_layout_output', 'entry_menu_title', 'entry_menu_show_blog', 'entry_menu_show_categories',
             'entry_menu_show_articles', 'entry_menu_category', 'entry_menu_limit', 'entry_menu_sort', 'entry_menu_name', 'entry_menu_status',
-            'entry_menu_display', 'entry_slider_items', 'entry_slider_autoplay', 'entry_slider_interval',
-            'help_seo_keyword', 'help_layout_output', 'help_menu_category', 'help_multiple_menus', 'help_slider_items', 'button_save', 'button_cancel',
+            'entry_menu_display', 'entry_slider_items', 'entry_items_desktop', 'entry_items_tablet', 'entry_items_mobile', 'entry_slider_autoplay', 'entry_slider_interval',
+            'help_seo_keyword', 'help_layout_output', 'help_menu_category', 'help_multiple_menus', 'help_slider_items', 'help_items_per_view', 'button_save', 'button_cancel',
             'button_add_menu', 'button_remove_menu',
             'button_categories', 'button_articles'
         );
@@ -78,6 +78,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $data['error_menu_limit'] = isset($this->error['menu_limit']) ? $this->error['menu_limit'] : array();
         $data['error_menu_name'] = isset($this->error['menu_name']) ? $this->error['menu_name'] : array();
         $data['error_slider_items'] = isset($this->error['slider_items']) ? $this->error['slider_items'] : array();
+        $data['error_items'] = isset($this->error['items']) ? $this->error['items'] : array();
         $data['error_slider_interval'] = isset($this->error['slider_interval']) ? $this->error['slider_interval'] : array();
         $data['error_image'] = isset($this->error['image']) ? $this->error['image'] : '';
         $data['error_title'] = isset($this->error['title']) ? $this->error['title'] : array();
@@ -99,8 +100,8 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $data['articles_url'] = $this->url->link('extension/probg_blog/article', 'user_token=' . $this->session->data['user_token'], true);
         $data['total_categories'] = $this->model_extension_probg_blog_category->getTotalCategories();
         $data['total_articles'] = $this->model_extension_probg_blog_article->getTotalArticles();
-        $data['stage'] = '26';
-        $data['version'] = '1.4.2';
+        $data['stage'] = '27';
+        $data['version'] = '1.5.0';
 
         $this->load->model('localisation/language');
         $data['languages'] = $this->model_localisation_language->getLanguages();
@@ -196,7 +197,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $settings['module_probg_blog_menu_category_id'] = 0;
         $settings['module_probg_blog_menu_limit'] = 10;
         $settings['module_probg_blog_menu_sort'] = 'date';
-        $settings['module_probg_blog_version'] = '1.4.2';
+        $settings['module_probg_blog_version'] = '1.5.0';
         $this->model_setting_setting->editSetting('module_probg_blog', $settings);
         $this->ensureModuleInstances();
         $this->grantPermissions();
@@ -256,6 +257,9 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             'limit' => 10,
             'sort' => 'date',
             'display' => 'list',
+            'items_desktop' => 0,
+            'items_tablet' => 0,
+            'items_mobile' => 0,
             'slider_items' => 3,
             'slider_autoplay' => 1,
             'slider_interval' => 5000,
@@ -275,7 +279,14 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $menu['limit'] = max(1, min(100, (int)$menu['limit']));
         $menu['sort'] = $menu['sort'] === 'sort_order' ? 'sort_order' : 'date';
         $menu['display'] = $menu['display'] === 'slider' ? 'slider' : 'list';
-        $menu['slider_items'] = max(1, min(6, (int)$menu['slider_items']));
+
+        $legacy_items = max(1, min(6, (int)$menu['slider_items']));
+        $menu['items_desktop'] = (int)$menu['items_desktop'] > 0 ? max(1, min(6, (int)$menu['items_desktop'])) : $legacy_items;
+        $menu['items_tablet'] = (int)$menu['items_tablet'] > 0 ? max(1, min(6, (int)$menu['items_tablet'])) : min(2, $menu['items_desktop']);
+        $menu['items_mobile'] = (int)$menu['items_mobile'] > 0 ? max(1, min(6, (int)$menu['items_mobile'])) : 1;
+        // Keep the legacy key in sync so older templates/installations continue to render safely.
+        $menu['slider_items'] = $menu['items_desktop'];
+
         $menu['slider_autoplay'] = !empty($menu['slider_autoplay']) ? 1 : 0;
         $menu['slider_interval'] = max(1000, min(30000, (int)$menu['slider_interval']));
         $menu['status'] = !empty($menu['status']) ? 1 : 0;
@@ -359,6 +370,9 @@ class ControllerExtensionModuleProbgBlog extends Controller {
                     'limit' => isset($settings['module_probg_blog_menu_limit']) ? (int)$settings['module_probg_blog_menu_limit'] : 10,
                     'sort' => isset($settings['module_probg_blog_menu_sort']) ? $settings['module_probg_blog_menu_sort'] : 'date',
                     'display' => 'list',
+                    'items_desktop' => 3,
+                    'items_tablet' => 2,
+                    'items_mobile' => 1,
                     'slider_items' => 3,
                     'slider_autoplay' => 1,
                     'slider_interval' => 5000,
@@ -459,9 +473,12 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             if ($menu_limit < 1 || $menu_limit > 100) {
                 $this->error['menu_limit'][$row] = $this->language->get('error_menu_limit');
             }
-            $slider_items = isset($menu['slider_items']) ? (int)$menu['slider_items'] : 0;
-            if ($slider_items < 1 || $slider_items > 6) {
-                $this->error['slider_items'][$row] = $this->language->get('error_slider_items');
+            foreach (array('desktop', 'tablet', 'mobile') as $device) {
+                $key = 'items_' . $device;
+                $items = isset($menu[$key]) ? (int)$menu[$key] : 0;
+                if ($items < 1 || $items > 6) {
+                    $this->error['items'][$row][$device] = $this->language->get('error_items');
+                }
             }
             $slider_interval = isset($menu['slider_interval']) ? (int)$menu['slider_interval'] : 0;
             if ($slider_interval < 1000 || $slider_interval > 30000) {
