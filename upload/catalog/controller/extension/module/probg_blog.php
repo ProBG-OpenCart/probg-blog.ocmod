@@ -1,6 +1,7 @@
 <?php
 class ControllerExtensionModuleProbgBlog extends Controller {
     private static $full_page_rendering = false;
+    private static $menu_counter = 0;
 
     public function index($setting=array()) {
         if (!$this->config->get('module_probg_blog_status')) return '';
@@ -169,9 +170,14 @@ class ControllerExtensionModuleProbgBlog extends Controller {
     }
 
     private function module($setting) {
+        if (is_array($setting) && isset($setting['probg_blog_type']) && $setting['probg_blog_type'] === 'menu') {
+            if (isset($setting['status']) && !(int)$setting['status']) return '';
+            return $this->menuModule($setting);
+        }
+
         $mode = $this->config->get('module_probg_blog_layout_output');
         if ($mode === 'menu') {
-            return $this->menuModule();
+            return $this->menuModule($this->legacyMenuSettings());
         }
 
         $data['heading_title'] = $this->language->get('heading_title');
@@ -180,11 +186,29 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         return $this->load->view('extension/module/probg_blog', $data);
     }
 
-    private function menuModule() {
+    private function legacyMenuSettings() {
+        return array(
+            'probg_blog_type' => 'menu',
+            'menu_description' => (array)$this->config->get('module_probg_blog_menu_description'),
+            'show_blog' => (int)$this->config->get('module_probg_blog_menu_show_blog'),
+            'show_categories' => (int)$this->config->get('module_probg_blog_menu_show_categories'),
+            'show_articles' => (int)$this->config->get('module_probg_blog_menu_show_articles'),
+            'category_id' => (int)$this->config->get('module_probg_blog_menu_category_id'),
+            'limit' => max(1, (int)$this->config->get('module_probg_blog_menu_limit')),
+            'sort' => $this->config->get('module_probg_blog_menu_sort') === 'sort_order' ? 'sort_order' : 'date',
+            'display' => 'list',
+            'slider_items' => 3,
+            'slider_autoplay' => 0,
+            'slider_interval' => 5000,
+            'status' => 1
+        );
+    }
+
+    private function menuModule($menu=array()) {
         $language_id = (int)$this->config->get('config_language_id');
-        $descriptions = $this->config->get('module_probg_blog_menu_description');
+        $descriptions = isset($menu['menu_description']) && is_array($menu['menu_description']) ? $menu['menu_description'] : array();
         $title = '';
-        if (is_array($descriptions) && isset($descriptions[$language_id]['title'])) {
+        if (isset($descriptions[$language_id]['title'])) {
             $title = trim($descriptions[$language_id]['title']);
         }
         if ($title === '') $title = $this->language->get('heading_title');
@@ -193,12 +217,19 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $data['text_blog_home'] = $this->language->get('text_blog_home');
         $data['text_categories'] = $this->language->get('text_categories');
         $data['text_articles'] = $this->language->get('text_articles');
-        $data['show_blog'] = (bool)$this->config->get('module_probg_blog_menu_show_blog');
-        $data['show_categories'] = (bool)$this->config->get('module_probg_blog_menu_show_categories');
-        $data['show_articles'] = (bool)$this->config->get('module_probg_blog_menu_show_articles');
+        $data['text_previous'] = $this->language->get('text_previous');
+        $data['text_next'] = $this->language->get('text_next');
+        $data['show_blog'] = isset($menu['show_blog']) && (int)$menu['show_blog'] === 1;
+        $data['show_categories'] = isset($menu['show_categories']) && (int)$menu['show_categories'] === 1;
+        $data['show_articles'] = isset($menu['show_articles']) && (int)$menu['show_articles'] === 1;
         $data['blog_url'] = $this->url->link('extension/module/probg_blog','',true);
         $data['categories'] = array();
         $data['articles'] = array();
+        $data['display'] = isset($menu['display']) && $menu['display'] === 'slider' ? 'slider' : 'list';
+        $data['slider_items'] = max(1, min(6, isset($menu['slider_items']) ? (int)$menu['slider_items'] : 3));
+        $data['slider_autoplay'] = !empty($menu['slider_autoplay']) ? 1 : 0;
+        $data['slider_interval'] = max(1000, min(30000, isset($menu['slider_interval']) ? (int)$menu['slider_interval'] : 5000));
+        $data['menu_uid'] = 'probg-blog-menu-' . (++self::$menu_counter);
 
         if ($data['show_categories']) {
             foreach ($this->model_extension_probg_blog_blog->getCategories() as $category) {
@@ -211,22 +242,31 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         }
 
         if ($data['show_articles']) {
-            $limit = (int)$this->config->get('module_probg_blog_menu_limit');
-            if ($limit < 1) $limit = 10;
-            $category_id = (int)$this->config->get('module_probg_blog_menu_category_id');
-            $sort = $this->config->get('module_probg_blog_menu_sort') === 'sort_order' ? 'sort_order' : 'date';
+            $limit = max(1, min(100, isset($menu['limit']) ? (int)$menu['limit'] : 10));
+            $category_id = isset($menu['category_id']) ? (int)$menu['category_id'] : 0;
+            $sort = isset($menu['sort']) && $menu['sort'] === 'sort_order' ? 'sort_order' : 'date';
             $filter = array('limit'=>$limit, 'sort'=>$sort);
             if ($category_id > 0) $filter['category_id'] = $category_id;
+            $width = max(1, (int)$this->config->get('module_probg_blog_image_list_width'));
+            $height = max(1, (int)$this->config->get('module_probg_blog_image_list_height'));
             foreach ($this->model_extension_probg_blog_blog->getArticles($filter) as $article) {
                 $data['articles'][] = array(
                     'title'=>$article['title'],
                     'category_title'=>$article['category_title'],
+                    'thumb'=>$this->image($article['image'],$width,$height),
+                    'date_added'=>date($this->language->get('date_format_short'),strtotime($article['date_added'])),
                     'href'=>$this->url->link('extension/module/probg_blog','probg_blog_category_id='.(int)$article['category_id'].'&probg_blog_article_id='.(int)$article['article_id'],true)
                 );
             }
         }
 
         if (!$data['show_blog'] && !$data['categories'] && !$data['articles']) return '';
+
+        if ($data['display'] === 'slider' && $data['articles']) {
+            $this->document->addStyle('catalog/view/theme/default/stylesheet/probg_blog_menu_slider.css');
+            $this->document->addScript('catalog/view/javascript/probg_blog_menu_slider.js');
+        }
+
         return $this->load->view('extension/module/probg_blog_menu', $data);
     }
 
