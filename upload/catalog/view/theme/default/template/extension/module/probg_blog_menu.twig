@@ -24,7 +24,7 @@
       </div>
 
       {% if display == 'slider' %}
-        <div class="probg-blog-article-slider" data-probg-blog-slider data-items="{{ slider_items }}" data-autoplay="{{ slider_autoplay }}" data-interval="{{ slider_interval }}">
+        <div class="probg-blog-article-slider" data-probg-blog-slider data-items-desktop="{{ items_desktop }}" data-items-tablet="{{ items_tablet }}" data-items-mobile="{{ items_mobile }}" data-autoplay="{{ slider_autoplay }}" data-interval="{{ slider_interval }}">
           <div class="probg-blog-slider-viewport">
             <div class="probg-blog-slider-track">
               {% for article in articles %}
@@ -44,7 +44,7 @@
           {% if articles|length > 1 %}<div class="probg-blog-slider-dots mt-3" aria-hidden="true"></div>{% endif %}
         </div>
       {% else %}
-        <div class="probg-blog-article-list-grid">
+        <div class="probg-blog-article-list-grid" style="--probg-blog-items-desktop:{{ items_desktop }};--probg-blog-items-tablet:{{ items_tablet }};--probg-blog-items-mobile:{{ items_mobile }}">
           {% for article in articles %}
             <article class="probg-blog-list-card-item">
               <a href="{{ article.href }}" class="card h-100 text-decoration-none probg-blog-article-card probg-blog-slider-card">
