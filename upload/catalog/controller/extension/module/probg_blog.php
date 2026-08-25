@@ -184,6 +184,12 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             return $this->load->view('extension/module/probg_blog', $data);
         }
 
+        // Since 1.3.0 all layout output is rendered by explicit module instances.
+        // A leftover bare probg_blog layout row must not render a second fallback block.
+        if ($this->config->get('module_probg_blog_instances_migrated')) {
+            return '';
+        }
+
         $mode = $this->config->get('module_probg_blog_layout_output');
         if ($mode === 'menu') {
             return $this->menuModule($this->legacyMenuSettings());

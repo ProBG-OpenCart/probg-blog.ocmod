@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.4.1] - 2026-08-25
+
+### fix — Български
+
+- Коригирано е двойното показване на ProBG Blog блокове след активиране на menu instance.
+- След миграция към `probg_blog.<module_id>` остатъчен гол `probg_blog` layout запис вече не рендерира legacy fallback.
+- Директните blog/category/article страници и валидните menu/latest-articles instances не се променят.
+
+### fix — English
+
+- Fixed duplicate ProBG Blog blocks after enabling a menu instance.
+- After migration to `probg_blog.<module_id>`, a leftover bare `probg_blog` layout entry no longer renders the legacy fallback.
+- Direct blog/category/article pages and valid menu/latest-articles instances are unchanged.
+
 ## [1.4.0] - 2026-08-25
 
 ### feat — Български
