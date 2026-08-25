@@ -1,0 +1,52 @@
+name: Update ProBG Blog README descriptions
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/update-readme-descriptions.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout documentation branch
+        uses: actions/checkout@v4
+        with:
+          ref: docs/readme-descriptions-1.4.2
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update README
+        run: |
+          python3 .github/tmp_patch_readme_descriptions_1_4_2.py
+          rm .github/tmp_patch_readme_descriptions_1_4_2.py
+          grep -q '^### Кратко описание$' README.md
+          grep -q '^### Описание$' README.md
+          grep -q '^### Основни възможности$' README.md
+          grep -q '^### Документация$' README.md
+          grep -q '^### Short description$' README.md
+          grep -q '^### Description$' README.md
+          grep -q '^### Main features$' README.md
+          grep -q '^### Documentation$' README.md
+          grep -q -- '- Версия: `1.4.2`' README.md
+
+      - name: Commit README
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md .github/tmp_patch_readme_descriptions_1_4_2.py
+          git commit -m 'docs: add Bulgarian and English module descriptions'
+          git push origin HEAD:docs/readme-descriptions-1.4.2
+
+      - name: Remove one-off workflow
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+          git rm .github/workflows/update-readme-descriptions.yml
+          git commit -m 'chore: remove one-off README workflow'
+          git push origin main
