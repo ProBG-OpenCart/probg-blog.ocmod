@@ -277,9 +277,13 @@ class ControllerExtensionModuleProbgBlog extends Controller {
 
         if (!$data['show_blog'] && !$data['categories'] && !$data['articles']) return '';
 
-        if ($data['display'] === 'slider' && $data['articles']) {
+        if ($data['articles']) {
+            // List and slider use the same article card styling.
             $this->document->addStyle('catalog/view/theme/default/stylesheet/probg_blog_menu_slider.css');
-            $this->document->addScript('catalog/view/javascript/probg_blog_menu_slider.js');
+
+            if ($data['display'] === 'slider') {
+                $this->document->addScript('catalog/view/javascript/probg_blog_menu_slider.js');
+            }
         }
 
         return $this->load->view('extension/module/probg_blog_menu', $data);
