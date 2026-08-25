@@ -32,7 +32,7 @@ jobs:
             $this->document->addStyle('catalog/view/theme/default/stylesheet/probg_blog_menu_slider.css');
             $this->document->addScript('catalog/view/javascript/probg_blog_menu_slider.js');
         }
-"""
+          """
           new = """        if ($data['articles']) {
             // List and slider use the same article card styling.
             $this->document->addStyle('catalog/view/theme/default/stylesheet/probg_blog_menu_slider.css');
@@ -41,18 +41,18 @@ jobs:
                 $this->document->addScript('catalog/view/javascript/probg_blog_menu_slider.js');
             }
         }
-"""
+          """
           if old not in s:
               raise SystemExit('catalog article asset block not found')
           catalog.write_text(s.replace(old, new, 1))
 
           admin = Path('upload/admin/controller/extension/module/probg_blog.php')
-          s = admin.read_text().replace("1.4.1", "1.4.2")
+          s = admin.read_text().replace('1.4.1', '1.4.2')
           s = s.replace("$data['stage'] = '25';", "$data['stage'] = '26';")
           admin.write_text(s)
 
           model = Path('upload/admin/model/extension/module/probg_blog.php')
-          model.write_text(model.read_text().replace("1.4.1", "1.4.2"))
+          model.write_text(model.read_text().replace('1.4.1', '1.4.2'))
 
           install = Path('install.xml')
           s = install.read_text()
@@ -90,7 +90,7 @@ jobs:
 - List mode uses a responsive static grid without slider track, arrows, dots or autoplay.
 - Shared card CSS loads for both modes, while slider JavaScript remains Slider-only.
 
-"""
+          """
           if '## [1.4.2] - 2026-08-25' not in data:
               data = data.replace('# Changelog\n\n', '# Changelog\n\n' + entry, 1)
           changelog.write_text(data)
@@ -107,7 +107,7 @@ List режимът остава статичен: картите се подр�
 ## English
 
 Version **1.4.2** unifies menu article presentation. **Article display → List** now renders the same article card structure used by **Slider** mode, while remaining a static responsive grid without slider controls or JavaScript behavior.
-""")
+          """)
 
           stages = Path('docs/STAGES.md')
           data = stages.read_text()
@@ -124,7 +124,7 @@ Version **1.4.2** unifies menu article presentation. **Article display → List*
           grep -q 'probg-blog-article-list-grid' upload/catalog/view/theme/default/template/extension/module/probg_blog_menu.twig
           grep -q 'probg-blog-article-card' upload/catalog/view/theme/default/template/extension/module/probg_blog_menu.twig
           grep -q 'probg-blog-article-list-grid' upload/catalog/view/theme/default/stylesheet/probg_blog_menu_slider.css
-          grep -q "if (\$data\['articles'\])" upload/catalog/controller/extension/module/probg_blog.php
+          grep -Fq "if ($data['articles'])" upload/catalog/controller/extension/module/probg_blog.php
 
       - name: Commit feature branch
         run: |
