@@ -12,23 +12,24 @@
   {% endif %}
 
   {% if show_articles and articles %}
-    {% if display == 'slider' %}
-      <div class="probg-blog-menu-articles p-3">
-        <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
-          <div class="text-uppercase small fw-semibold text-muted">{{ text_articles }}</div>
-          {% if articles|length > 1 %}
-            <div class="btn-group btn-group-sm" role="group" aria-label="{{ text_articles }}">
-              <button type="button" class="btn btn-outline-secondary probg-blog-slider-prev" aria-label="{{ text_previous }}"><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
-              <button type="button" class="btn btn-outline-secondary probg-blog-slider-next" aria-label="{{ text_next }}"><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
-            </div>
-          {% endif %}
-        </div>
+    <div class="probg-blog-menu-articles p-3">
+      <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+        <div class="text-uppercase small fw-semibold text-muted">{{ text_articles }}</div>
+        {% if display == 'slider' and articles|length > 1 %}
+          <div class="btn-group btn-group-sm" role="group" aria-label="{{ text_articles }}">
+            <button type="button" class="btn btn-outline-secondary probg-blog-slider-prev" aria-label="{{ text_previous }}"><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
+            <button type="button" class="btn btn-outline-secondary probg-blog-slider-next" aria-label="{{ text_next }}"><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+          </div>
+        {% endif %}
+      </div>
+
+      {% if display == 'slider' %}
         <div class="probg-blog-article-slider" data-probg-blog-slider data-items="{{ slider_items }}" data-autoplay="{{ slider_autoplay }}" data-interval="{{ slider_interval }}">
           <div class="probg-blog-slider-viewport">
             <div class="probg-blog-slider-track">
               {% for article in articles %}
                 <article class="probg-blog-slider-slide">
-                  <a href="{{ article.href }}" class="card h-100 text-decoration-none probg-blog-slider-card">
+                  <a href="{{ article.href }}" class="card h-100 text-decoration-none probg-blog-article-card probg-blog-slider-card">
                     {% if article.thumb %}<img src="{{ article.thumb }}" class="card-img-top img-fluid" alt="{{ article.title }}" loading="lazy">{% endif %}
                     <div class="card-body p-3">
                       {% if article.category_title %}<div class="small text-muted mb-1">{{ article.category_title }}</div>{% endif %}
@@ -42,12 +43,22 @@
           </div>
           {% if articles|length > 1 %}<div class="probg-blog-slider-dots mt-3" aria-hidden="true"></div>{% endif %}
         </div>
-      </div>
-    {% else %}
-      <div class="list-group list-group-flush">
-        <div class="list-group-item text-uppercase small fw-semibold text-muted bg-light">{{ text_articles }}</div>
-        {% for article in articles %}<a href="{{ article.href }}" class="list-group-item list-group-item-action"><span class="d-block fw-semibold">{{ article.title }}</span>{% if article.category_title %}<small class="text-muted">{{ article.category_title }}</small>{% endif %}</a>{% endfor %}
-      </div>
-    {% endif %}
+      {% else %}
+        <div class="probg-blog-article-list-grid">
+          {% for article in articles %}
+            <article class="probg-blog-list-card-item">
+              <a href="{{ article.href }}" class="card h-100 text-decoration-none probg-blog-article-card probg-blog-slider-card">
+                {% if article.thumb %}<img src="{{ article.thumb }}" class="card-img-top img-fluid" alt="{{ article.title }}" loading="lazy">{% endif %}
+                <div class="card-body p-3">
+                  {% if article.category_title %}<div class="small text-muted mb-1">{{ article.category_title }}</div>{% endif %}
+                  <h4 class="h6 card-title mb-1">{{ article.title }}</h4>
+                  {% if article.date_added %}<div class="small text-muted">{{ article.date_added }}</div>{% endif %}
+                </div>
+              </a>
+            </article>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
   {% endif %}
 </aside>

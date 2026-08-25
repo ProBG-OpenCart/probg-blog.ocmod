@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.4.2] - 2026-08-25
+
+### fix — Български
+
+- Режимът **Изглед на статиите → Списък** вече използва същите article cards като режим **Слайдър**.
+- Картите показват изображение, категория, заглавие и дата със същия стил, размери и hover поведение.
+- В режим Списък картите се подреждат в responsive grid без slider track, стрелки, dots или autoplay.
+- Общият card stylesheet се зарежда и за List режим, докато slider JavaScript се зарежда само при Slider.
+
+### fix — English
+
+- **Article display → List** now uses the same article cards as **Slider** mode.
+- Cards share the same image, category, title, date, dimensions and hover treatment.
+- List mode uses a responsive static grid without slider track, arrows, dots or autoplay.
+- Shared card CSS loads for both modes, while slider JavaScript remains Slider-only.
+
 ## [1.4.1] - 2026-08-25
 
 ### fix — Български
