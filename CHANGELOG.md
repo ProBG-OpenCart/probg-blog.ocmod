@@ -1,5 +1,25 @@
 # Changelog
 
+## [1.5.0] - 2026-08-25
+
+### feat — Български
+
+- Настройката за броя видими статии вече се прилага и при **Изглед на статиите → Списък**, не само при **Слайдър**.
+- Добавени са отделни настройки **Статии на екран за десктоп**, **Статии на екран за таблет** и **Статии на екран за телефон**.
+- Режимите **Списък** и **Слайдър** използват едни и същи responsive стойности за съответния breakpoint.
+- Съществуващите menu instances се мигрират без визуален регрес: старата стойност `slider_items` става Desktop, Tablet запазва досегашното адаптивно поведение до 2, а Phone остава 1.
+- Добавен е runtime fallback за стари menu instances, които още не са отваряни и записвани след обновяването.
+- Всяка responsive стойност се валидира в диапазона от 1 до 6.
+
+### feat — English
+
+- The visible article count now applies to **Article display → List** as well as **Slider**.
+- Added separate **Articles per view on desktop**, **Articles per view on tablet**, and **Articles per view on phone** settings.
+- **List** and **Slider** use the same responsive values at each breakpoint.
+- Existing menu instances migrate without a visual regression: the legacy `slider_items` value becomes Desktop, Tablet keeps the previous adaptive behavior up to 2, and Phone remains 1.
+- Added a runtime fallback for legacy menu instances that have not yet been opened and saved after the upgrade.
+- Every responsive value is validated from 1 to 6.
+
 ## [1.4.2] - 2026-08-25
 
 ### fix — Български

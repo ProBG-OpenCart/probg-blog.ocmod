@@ -212,6 +212,9 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             'limit' => max(1, (int)$this->config->get('module_probg_blog_menu_limit')),
             'sort' => $this->config->get('module_probg_blog_menu_sort') === 'sort_order' ? 'sort_order' : 'date',
             'display' => 'list',
+            'items_desktop' => 3,
+            'items_tablet' => 2,
+            'items_mobile' => 1,
             'slider_items' => 3,
             'slider_autoplay' => 0,
             'slider_interval' => 5000,
@@ -241,7 +244,11 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $data['categories'] = array();
         $data['articles'] = array();
         $data['display'] = isset($menu['display']) && $menu['display'] === 'slider' ? 'slider' : 'list';
-        $data['slider_items'] = max(1, min(6, isset($menu['slider_items']) ? (int)$menu['slider_items'] : 3));
+        $legacy_items = max(1, min(6, isset($menu['slider_items']) ? (int)$menu['slider_items'] : 3));
+        $data['items_desktop'] = max(1, min(6, isset($menu['items_desktop']) && (int)$menu['items_desktop'] > 0 ? (int)$menu['items_desktop'] : $legacy_items));
+        $data['items_tablet'] = max(1, min(6, isset($menu['items_tablet']) && (int)$menu['items_tablet'] > 0 ? (int)$menu['items_tablet'] : min(2, $data['items_desktop'])));
+        $data['items_mobile'] = max(1, min(6, isset($menu['items_mobile']) && (int)$menu['items_mobile'] > 0 ? (int)$menu['items_mobile'] : 1));
+        $data['slider_items'] = $data['items_desktop'];
         $data['slider_autoplay'] = !empty($menu['slider_autoplay']) ? 1 : 0;
         $data['slider_interval'] = max(1000, min(30000, isset($menu['slider_interval']) ? (int)$menu['slider_interval'] : 5000));
         $data['menu_uid'] = 'probg-blog-menu-' . (++self::$menu_counter);
