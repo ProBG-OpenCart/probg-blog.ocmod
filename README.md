@@ -2,7 +2,7 @@
 
 [![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-Revolut-191C1F?logo=revolut&logoColor=white)](https://revolut.me/vtotev)
 
-**Current version:** `1.5.0`  
+**Current version:** `1.6.0`  
 **Status:** Stable  
 **OpenCart:** `3.0.2.x` / `3.0.3.x`
 
@@ -22,11 +22,14 @@
 
 Модулът предоставя собствена начална страница на блога, страници за категории и статии, breadcrumbs, пагинация, canonical адреси, Open Graph, Twitter Cards и структурирани JSON-LD данни. SEO URL адресите могат да се генерират автоматично с транслитерация и се съхраняват в стандартната OpenCart таблица `seo_url`.
 
-За OpenCart Layouts могат да се създават **неограничен брой отделни ProBG Blog менюта**. Всяко меню има собствени настройки за заглавие, показване на линк към блога, категории и статии, филтър по категория, лимит, подредба и режим **Списък** или **Слайдър**. И двата режима използват еднакви article cards и общи responsive настройки за броя видими статии на десктоп, таблет и телефон, а Slider режимът допълнително предлага навигация, dots, autoplay и touch swipe.
+За OpenCart Layouts могат да се създават **неограничен брой отделни ProBG Blog менюта**. Всяко меню има собствени настройки за заглавие, показване на линк към блога, категории и статии, филтър по категория, лимит, подредба и режим **Списък** или **Слайдър**. И двата режима използват еднакви article cards, а slider режимът добавя responsive навигация, dots, autoplay и touch swipe.
 
 ## Основни възможности
 
 - Пълноценен блог за OpenCart 3 без външна CMS.
+- Избор **Grid / List** за основната блог страница и категориите.
+- Grid изглед с 3 статии на ред на desktop.
+- Контрол върху показването и дължината на описанията в навигацията на категориите.
 - Многоезични категории и статии.
 - HTML редактор за описанията.
 - Кратко и пълно описание на статия.
@@ -50,7 +53,6 @@
 - Филтриране на статиите в меню по избрана категория.
 - Режим **Списък** с responsive article cards.
 - Режим **Слайдър** със същите article cards.
-- Отделен брой видими статии за десктоп, таблет и телефон, общ за List и Slider.
 - Responsive multi-item slider със стрелки, dots, autoplay и touch swipe.
 - Системен instance **ProBG Blog - Latest Articles** за блок с последни статии.
 - Bootstrap 5 ориентирани storefront шаблони с cards, breadcrumbs и responsive grid.
@@ -60,7 +62,7 @@
 
 ### Инсталация
 
-1. Изтеглете `probg-blog-1.5.0.ocmod.zip` от GitHub Release или директорията `dist/`.
+1. Изтеглете `probg-blog-1.6.0.ocmod.zip` от GitHub Release или директорията `dist/`.
 2. Отворете **Extensions → Installer** и качете OCMOD ZIP пакета.
 3. Отворете **Extensions → Modifications** и натиснете **Refresh**.
 4. Отворете **Extensions → Extensions → Modules** и инсталирайте **ProBG Blog**.
@@ -74,7 +76,7 @@
 
 Основните настройки на модула са организирани в секции:
 
-- **Общи** — статус, подредба и брой статии на страница;
+- **Общи** — статус, подредба, брой статии на страница, Grid/List изглед и настройки за описанията в навигацията на категориите;
 - **Данни** — многоезично заглавие, описание и SEO данни за основната блог секция;
 - **Меню** — управление на неограничен брой frontend менюта;
 - **Изображения** — размери за списък, статия и галерия;
@@ -128,14 +130,9 @@
 - лимит;
 - подредба по дата или `sort_order`;
 - изглед **Списък** или **Слайдър**;
-- **Статии на екран за десктоп**;
-- **Статии на екран за таблет**;
-- **Статии на екран за телефон**;
-- при Slider — autoplay и интервал.
+- при Slider — брой елементи, autoplay и интервал.
 
-Трите настройки за броя видими статии важат еднакво за двата режима. При **Списък** те определят броя колони в responsive grid. При **Слайдър** определят броя едновременно видими карти за съответното устройство, като Slider допълнително предлага стрелки, dots, autoplay и touch swipe.
-
-При обновяване от по-стара версия текущата стойност `slider_items` се използва за Desktop, Tablet получава досегашното адаптивно поведение до 2 елемента, а Phone остава 1.
+При **Списък** статиите се визуализират като статичен responsive grid със същите cards, използвани от слайдъра. При **Слайдър** се добавят стрелки, dots, autoplay, responsive брой елементи и touch swipe.
 
 За блок с последни статии се използва системният instance **ProBG Blog - Latest Articles**.
 
@@ -211,11 +208,14 @@ Categories and articles are multilingual and have their own metadata and SEO URL
 
 The extension provides a dedicated blog home page, category pages, article pages, breadcrumbs, pagination, canonical URLs, Open Graph, Twitter Cards, and structured JSON-LD data. SEO URLs can be generated automatically with transliteration and are stored in OpenCart's standard `seo_url` table.
 
-For OpenCart Layouts you can create **unlimited independent ProBG Blog menu instances**. Every menu has its own title, blog-link/category/article visibility options, category filter, article limit, sorting, and **List** or **Slider** display mode. Both modes use the same article cards and shared responsive article counts for desktop, tablet, and phone, while Slider mode additionally provides navigation, dots, autoplay, and touch swipe.
+For OpenCart Layouts you can create **unlimited independent ProBG Blog menu instances**. Every menu has its own title, blog-link/category/article visibility options, category filter, article limit, sorting, and **List** or **Slider** display mode. Both modes use the same article cards, while Slider mode adds responsive navigation, dots, autoplay, and touch swipe.
 
 ## Main features
 
 - Complete blog functionality for OpenCart 3 without an external CMS.
+- **Grid / List** archive display for blog and category pages.
+- Three article cards per row on desktop in Grid mode.
+- Configurable category-navigation description visibility and character limit.
 - Multilingual categories and articles.
 - HTML editor for content fields.
 - Short and full article descriptions.
@@ -239,7 +239,6 @@ For OpenCart Layouts you can create **unlimited independent ProBG Blog menu inst
 - Filter menu articles by a selected category.
 - **List** mode with responsive article cards.
 - **Slider** mode using the same article cards.
-- Separate visible article counts for desktop, tablet, and phone shared by List and Slider.
 - Responsive multi-item slider with arrows, dots, autoplay, and touch swipe.
 - Dedicated **ProBG Blog - Latest Articles** system instance for Layouts.
 - Bootstrap 5-oriented storefront templates with responsive cards, breadcrumbs, and grids.
@@ -249,7 +248,7 @@ For OpenCart Layouts you can create **unlimited independent ProBG Blog menu inst
 
 ### Installation
 
-1. Download `probg-blog-1.5.0.ocmod.zip` from the GitHub Release or the `dist/` directory.
+1. Download `probg-blog-1.6.0.ocmod.zip` from the GitHub Release or the `dist/` directory.
 2. Open **Extensions → Installer** and upload the OCMOD ZIP package.
 3. Open **Extensions → Modifications** and click **Refresh**.
 4. Open **Extensions → Extensions → Modules** and install **ProBG Blog**.
@@ -263,7 +262,7 @@ For OpenCart Layouts you can create **unlimited independent ProBG Blog menu inst
 
 The module settings are organized into sections:
 
-- **General** — status, article sorting, and articles per page;
+- **General** — status, article sorting, articles per page, Grid/List archive display, and category-navigation description settings;
 - **Data** — multilingual blog-section title, description, and SEO data;
 - **Menu** — unlimited frontend menu management;
 - **Images** — image dimensions for lists, articles, and galleries;
@@ -317,14 +316,9 @@ Each menu supports:
 - limit;
 - date or `sort_order` sorting;
 - **List** or **Slider** article display;
-- **Articles per view on desktop**;
-- **Articles per view on tablet**;
-- **Articles per view on phone**;
-- Slider autoplay and interval.
+- Slider item count, autoplay, and interval.
 
-The three visible-article settings apply equally to both display modes. In **List** mode they define the responsive grid column count. In **Slider** mode they define the number of simultaneously visible cards for the corresponding device, while the slider additionally provides arrows, dots, autoplay, and touch swipe.
-
-When upgrading from an older version, the existing `slider_items` value becomes the Desktop value, Tablet keeps the previous adaptive behavior up to 2 items, and Phone remains 1.
+In **List** mode, articles are rendered as a static responsive grid using the same cards as Slider mode. **Slider** mode adds arrows, dots, autoplay, responsive item count, and touch swipe.
 
 Use the dedicated **ProBG Blog - Latest Articles** system instance for a latest-articles layout block.
 

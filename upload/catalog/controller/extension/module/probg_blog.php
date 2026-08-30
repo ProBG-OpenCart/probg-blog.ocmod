@@ -34,7 +34,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
 
     private function listing() {
         $page = max(1, isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1);
-        $limit = max(1, (int)$this->config->get('module_probg_blog_limit'));
+        $limit = max(1, (int)($this->config->get('module_probg_blog_limit') ?: 12));
         $desc = $this->section();
         $title = !empty($desc['title']) ? $desc['title'] : $this->language->get('heading_title');
         $this->meta($desc, $title);
@@ -49,12 +49,13 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $data['text_articles'] = $this->language->get('text_articles');
         $data['text_read_more'] = $this->language->get('text_read_more');
         $data['text_no_results'] = $this->language->get('text_no_results');
+        $data['article_display'] = $this->config->get('module_probg_blog_list_display') === 'list' ? 'list' : 'grid';
         $data['breadcrumbs'] = $this->breadcrumbs();
         $data['categories'] = array();
         foreach ($this->model_extension_probg_blog_blog->getCategories() as $category) {
             $data['categories'][] = array(
                 'title'=>$category['title'],
-                'description'=>html_entity_decode($category['description'], ENT_QUOTES, 'UTF-8'),
+                'description'=>$this->categoryNavigationDescription($category['description']),
                 'article_count'=>$category['article_count'],
                 'href'=>$this->url->link('extension/module/probg_blog', 'probg_blog_category_id=' . (int)$category['category_id'], true)
             );
@@ -71,7 +72,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $layout_id = $this->model_extension_probg_blog_blog->getCategoryLayoutId($id);
         if ($layout_id) $this->config->set('config_layout_id', $layout_id);
         $page = max(1, isset($this->request->get['page']) ? (int)$this->request->get['page'] : 1);
-        $limit = max(1, (int)$this->config->get('module_probg_blog_limit'));
+        $limit = max(1, (int)($this->config->get('module_probg_blog_limit') ?: 12));
         $this->meta($category, $category['title']);
         $canonical = $this->url->link('extension/module/probg_blog', 'probg_blog_category_id=' . $id . ($page > 1 ? '&page=' . $page : ''), true);
         $this->document->addLink($canonical, 'canonical');
@@ -82,6 +83,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $data['description'] = html_entity_decode($category['description'], ENT_QUOTES, 'UTF-8');
         $data['text_read_more'] = $this->language->get('text_read_more');
         $data['text_no_results'] = $this->language->get('text_no_results');
+        $data['article_display'] = $this->config->get('module_probg_blog_list_display') === 'list' ? 'list' : 'grid';
         $data['breadcrumbs'] = $this->breadcrumbs(array(array('text'=>$category['title'],'href'=>$this->url->link('extension/module/probg_blog','probg_blog_category_id='.$id,true))));
         $total = $this->model_extension_probg_blog_blog->getTotalArticles($id);
         $data['articles'] = $this->articleCards($this->model_extension_probg_blog_blog->getArticles(array('category_id'=>$id,'start'=>($page-1)*$limit,'limit'=>$limit)));
@@ -294,6 +296,27 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         }
 
         return $this->load->view('extension/module/probg_blog_menu', $data);
+    }
+
+    private function categoryNavigationDescription($description) {
+        $status = $this->config->get('module_probg_blog_category_nav_description_status');
+        // Missing setting means an older installation that has not run the 1.6.0 migration yet.
+        if ($status !== null && !(int)$status) return '';
+
+        $limit = (int)$this->config->get('module_probg_blog_category_nav_description_limit');
+        if ($limit < 1) $limit = 160;
+        $limit = min(1000, $limit);
+
+        $text = html_entity_decode((string)$description, ENT_QUOTES, 'UTF-8');
+        $text = trim(preg_replace('/\s+/u', ' ', strip_tags($text)));
+        if ($text === '') return '';
+
+        if (utf8_strlen($text) > $limit) {
+            $text = rtrim(utf8_substr($text, 0, $limit));
+            $text .= '…';
+        }
+
+        return $text;
     }
 
     private function articleCards($rows) {

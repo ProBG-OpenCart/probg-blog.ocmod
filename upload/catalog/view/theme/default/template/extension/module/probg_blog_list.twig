@@ -28,7 +28,7 @@
                       <h3 class="h5 card-title mb-2"><a href="{{ category.href }}" class="text-decoration-none stretched-link">{{ category.title }}</a></h3>
                       <span class="badge rounded-pill text-bg-secondary">{{ category.article_count }}</span>
                     </div>
-                    {% if category.description %}<div class="card-text text-muted">{{ category.description }}</div>{% endif %}
+                    {% if category.description %}<p class="card-text text-muted mb-0">{{ category.description }}</p>{% endif %}
                   </div>
                 </div>
               </div>
@@ -37,27 +37,54 @@
         </section>
       {% endif %}
 
-      <section class="probg-blog-articles mb-4">
+      <section class="probg-blog-articles mb-4 probg-blog-articles-{{ article_display }}">
         <div class="d-flex align-items-center justify-content-between mb-3"><h2 class="h3 mb-0">{{ text_articles }}</h2></div>
         {% if articles %}
-          <div class="row g-4 probg-blog-grid">
-            {% for article in articles %}
-              <div class="col-sm-6 col-lg-6">
-                <article class="card h-100 border-0 shadow-sm probg-blog-card">
-                  {% if article.image %}<a href="{{ article.href }}" class="probg-blog-card-image"><img src="{{ article.image }}" alt="{{ article.title }}" class="card-img-top img-fluid"></a>{% endif %}
-                  <div class="card-body d-flex flex-column">
-                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2 small">
-                      <span class="text-muted">{{ article.date_added }}</span>
-                      {% if article.category_title %}<a href="{{ article.category_href }}" class="badge rounded-pill text-bg-light border text-decoration-none">{{ article.category_title }}</a>{% endif %}
+          {% if article_display == 'list' %}
+            <div class="probg-blog-article-list">
+              {% for article in articles %}
+                <article class="card border-0 shadow-sm probg-blog-card probg-blog-card-list">
+                  <div class="row probg-blog-list-row">
+                    {% if article.image %}
+                      <div class="col-sm-4 probg-blog-list-media-column">
+                        <a href="{{ article.href }}" class="probg-blog-card-image probg-blog-list-media"><img src="{{ article.image }}" alt="{{ article.title }}" class="img-fluid"></a>
+                      </div>
+                    {% endif %}
+                    <div class="{% if article.image %}col-sm-8{% else %}col-sm-12{% endif %} probg-blog-list-content-column">
+                      <div class="card-body d-flex flex-column">
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-2 small">
+                          <span class="text-muted">{{ article.date_added }}</span>
+                          {% if article.category_title %}<a href="{{ article.category_href }}" class="badge rounded-pill text-bg-light border text-decoration-none">{{ article.category_title }}</a>{% endif %}
+                        </div>
+                        <h3 class="h4 card-title"><a href="{{ article.href }}" class="text-decoration-none">{{ article.title }}</a></h3>
+                        {% if article.short_description %}<div class="card-text text-muted flex-grow-1 mb-3">{{ article.short_description }}</div>{% endif %}
+                        <div class="mt-auto"><a href="{{ article.href }}" class="btn btn-primary">{{ text_read_more }}</a></div>
+                      </div>
                     </div>
-                    <h3 class="h4 card-title"><a href="{{ article.href }}" class="text-decoration-none">{{ article.title }}</a></h3>
-                    {% if article.short_description %}<div class="card-text text-muted flex-grow-1 mb-3">{{ article.short_description }}</div>{% endif %}
-                    <div class="mt-auto"><a href="{{ article.href }}" class="btn btn-primary">{{ text_read_more }}</a></div>
                   </div>
                 </article>
-              </div>
-            {% endfor %}
-          </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="row g-4 probg-blog-grid">
+              {% for article in articles %}
+                <div class="col-12 col-sm-6 col-md-4">
+                  <article class="card h-100 border-0 shadow-sm probg-blog-card">
+                    {% if article.image %}<a href="{{ article.href }}" class="probg-blog-card-image"><img src="{{ article.image }}" alt="{{ article.title }}" class="card-img-top img-fluid"></a>{% endif %}
+                    <div class="card-body d-flex flex-column">
+                      <div class="d-flex flex-wrap align-items-center gap-2 mb-2 small">
+                        <span class="text-muted">{{ article.date_added }}</span>
+                        {% if article.category_title %}<a href="{{ article.category_href }}" class="badge rounded-pill text-bg-light border text-decoration-none">{{ article.category_title }}</a>{% endif %}
+                      </div>
+                      <h3 class="h4 card-title"><a href="{{ article.href }}" class="text-decoration-none">{{ article.title }}</a></h3>
+                      {% if article.short_description %}<div class="card-text text-muted flex-grow-1 mb-3">{{ article.short_description }}</div>{% endif %}
+                      <div class="mt-auto"><a href="{{ article.href }}" class="btn btn-primary">{{ text_read_more }}</a></div>
+                    </div>
+                  </article>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
         {% else %}
           <div class="alert alert-light border" role="alert">{{ text_no_results }}</div>
         {% endif %}
