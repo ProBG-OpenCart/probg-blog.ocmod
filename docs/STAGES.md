@@ -27,3 +27,4 @@
 - 1.4.0 — redesigned Menu administration as a searchable master/detail list with per-menu editing.
 - 1.4.1 — disabled the legacy bare-layout fallback after module-instance migration to prevent duplicate storefront blocks.
 - 1.4.2 — unified List and Slider article cards in blog menu instances; List remains a static responsive grid.
+- 1.6.0 — added Grid/List blog archive layouts, 12-article default, and configurable category navigation descriptions.

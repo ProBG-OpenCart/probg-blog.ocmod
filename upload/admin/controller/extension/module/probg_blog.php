@@ -18,11 +18,11 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             $this->grantPermissions();
         }
 
-        if ($this->config->get('module_probg_blog_version') !== '1.5.0') {
+        if ($this->config->get('module_probg_blog_version') !== '1.6.0') {
             $this->model_extension_module_probg_blog->migrate();
             $this->ensureModuleInstances();
             $settings = $this->model_setting_setting->getSetting('module_probg_blog');
-            $settings['module_probg_blog_version'] = '1.5.0';
+            $settings['module_probg_blog_version'] = '1.6.0';
             $this->model_setting_setting->editSetting('module_probg_blog', $settings);
         } else {
             $this->ensureModuleInstances();
@@ -30,6 +30,10 @@ class ControllerExtensionModuleProbgBlog extends Controller {
 
         if (($this->request->server['REQUEST_METHOD'] === 'POST') && $this->validate()) {
             $post = $this->request->post;
+            $post['module_probg_blog_list_display'] = isset($post['module_probg_blog_list_display']) && $post['module_probg_blog_list_display'] === 'list' ? 'list' : 'grid';
+            $category_nav_limit = isset($post['module_probg_blog_category_nav_description_limit']) ? (int)$post['module_probg_blog_category_nav_description_limit'] : 160;
+            if ($category_nav_limit < 1) $category_nav_limit = 160;
+            $post['module_probg_blog_category_nav_description_limit'] = min(1000, $category_nav_limit);
 
             if (!empty($post['module_probg_blog_description']) && is_array($post['module_probg_blog_description'])) {
                 foreach ($post['module_probg_blog_description'] as &$description) {
@@ -46,7 +50,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             $this->mirrorLegacyMenuSettings($post, $menus);
             $post['module_probg_blog_instances_migrated'] = 1;
 
-            $post['module_probg_blog_version'] = '1.5.0';
+            $post['module_probg_blog_version'] = '1.6.0';
             $this->model_setting_setting->editSetting('module_probg_blog', $post);
             $this->model_extension_module_probg_blog->saveSectionSeo(isset($post['module_probg_blog_description']) ? $post['module_probg_blog_description'] : array());
             $this->session->data['success'] = $this->language->get('text_success');
@@ -57,14 +61,14 @@ class ControllerExtensionModuleProbgBlog extends Controller {
             'heading_title', 'text_home', 'text_extension', 'text_success', 'text_edit', 'text_enabled', 'text_disabled',
             'text_categories', 'text_articles', 'text_settings', 'text_version', 'text_stage', 'text_stage_info',
             'text_general', 'text_content', 'text_images', 'text_integrations', 'text_menu', 'text_date', 'text_sort_order',
-            'text_layout_articles', 'text_layout_menu', 'text_all_categories', 'text_menu_list', 'text_menu_slider',
-            'entry_status', 'entry_sort', 'entry_limit', 'entry_title', 'entry_description', 'entry_meta_title',
+            'text_layout_articles', 'text_layout_menu', 'text_all_categories', 'text_menu_list', 'text_menu_slider', 'text_grid', 'text_list',
+            'entry_status', 'entry_sort', 'entry_limit', 'entry_list_display', 'entry_category_nav_description_status', 'entry_category_nav_description_limit', 'entry_title', 'entry_description', 'entry_meta_title',
             'entry_meta_description', 'entry_meta_keyword', 'entry_seo_keyword', 'entry_default_image',
             'entry_image_list', 'entry_image_article', 'entry_image_gallery', 'entry_sitemap', 'entry_cache',
             'entry_layout_output', 'entry_menu_title', 'entry_menu_show_blog', 'entry_menu_show_categories',
             'entry_menu_show_articles', 'entry_menu_category', 'entry_menu_limit', 'entry_menu_sort', 'entry_menu_name', 'entry_menu_status',
             'entry_menu_display', 'entry_slider_items', 'entry_items_desktop', 'entry_items_tablet', 'entry_items_mobile', 'entry_slider_autoplay', 'entry_slider_interval',
-            'help_seo_keyword', 'help_layout_output', 'help_menu_category', 'help_multiple_menus', 'help_slider_items', 'help_items_per_view', 'button_save', 'button_cancel',
+            'help_seo_keyword', 'help_layout_output', 'help_menu_category', 'help_multiple_menus', 'help_slider_items', 'help_items_per_view', 'help_category_nav_description_limit', 'button_save', 'button_cancel',
             'button_add_menu', 'button_remove_menu',
             'button_categories', 'button_articles'
         );
@@ -75,6 +79,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
 
         $data['error_warning'] = isset($this->error['warning']) ? $this->error['warning'] : '';
         $data['error_limit'] = isset($this->error['limit']) ? $this->error['limit'] : '';
+        $data['error_category_nav_description_limit'] = isset($this->error['category_nav_description_limit']) ? $this->error['category_nav_description_limit'] : '';
         $data['error_menu_limit'] = isset($this->error['menu_limit']) ? $this->error['menu_limit'] : array();
         $data['error_menu_name'] = isset($this->error['menu_name']) ? $this->error['menu_name'] : array();
         $data['error_slider_items'] = isset($this->error['slider_items']) ? $this->error['slider_items'] : array();
@@ -100,8 +105,8 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $data['articles_url'] = $this->url->link('extension/probg_blog/article', 'user_token=' . $this->session->data['user_token'], true);
         $data['total_categories'] = $this->model_extension_probg_blog_category->getTotalCategories();
         $data['total_articles'] = $this->model_extension_probg_blog_article->getTotalArticles();
-        $data['stage'] = '27';
-        $data['version'] = '1.5.0';
+        $data['stage'] = '28';
+        $data['version'] = '1.6.0';
 
         $this->load->model('localisation/language');
         $data['languages'] = $this->model_localisation_language->getLanguages();
@@ -131,7 +136,10 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $defaults = array(
             'module_probg_blog_status'=>0,
             'module_probg_blog_sort'=>'date',
-            'module_probg_blog_limit'=>10,
+            'module_probg_blog_limit'=>12,
+            'module_probg_blog_list_display'=>'grid',
+            'module_probg_blog_category_nav_description_status'=>1,
+            'module_probg_blog_category_nav_description_limit'=>160,
             'module_probg_blog_default_image'=>'',
             'module_probg_blog_image_list_width'=>400,
             'module_probg_blog_image_list_height'=>260,
@@ -197,7 +205,7 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $settings['module_probg_blog_menu_category_id'] = 0;
         $settings['module_probg_blog_menu_limit'] = 10;
         $settings['module_probg_blog_menu_sort'] = 'date';
-        $settings['module_probg_blog_version'] = '1.5.0';
+        $settings['module_probg_blog_version'] = '1.6.0';
         $this->model_setting_setting->editSetting('module_probg_blog', $settings);
         $this->ensureModuleInstances();
         $this->grantPermissions();
@@ -489,6 +497,12 @@ class ControllerExtensionModuleProbgBlog extends Controller {
         $limit = isset($this->request->post['module_probg_blog_limit']) ? (int)$this->request->post['module_probg_blog_limit'] : 0;
         if ($limit < 1 || $limit > 100) {
             $this->error['limit'] = $this->language->get('error_limit');
+        }
+
+        $category_nav_description_status = !empty($this->request->post['module_probg_blog_category_nav_description_status']);
+        $category_nav_description_limit = isset($this->request->post['module_probg_blog_category_nav_description_limit']) ? (int)$this->request->post['module_probg_blog_category_nav_description_limit'] : 0;
+        if ($category_nav_description_status && ($category_nav_description_limit < 1 || $category_nav_description_limit > 1000)) {
+            $this->error['category_nav_description_limit'] = $this->language->get('error_category_nav_description_limit');
         }
 
         foreach (array('module_probg_blog_image_list_width','module_probg_blog_image_list_height','module_probg_blog_image_article_width','module_probg_blog_image_article_height','module_probg_blog_image_gallery_width','module_probg_blog_image_gallery_height') as $key) {

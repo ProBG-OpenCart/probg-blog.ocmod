@@ -1,5 +1,29 @@
 # Changelog
 
+## [1.6.0] - 2026-08-30
+
+### feat — Български
+
+- По подразбиране новите инсталации използват **12 статии на страница**.
+- Добавена е настройка **Изглед на списъка със статии: Грид / Списък** за началната страница на блога и страниците на категориите.
+- Grid режимът показва по **3 статии на ред** на desktop и преминава адаптивно към 2/1 на по-малки екрани.
+- List режимът използва хоризонтални responsive article cards с изображение, дата, категория, заглавие, кратко описание и бутон.
+- Добавена е настройка за показване/скриване на описанията на категориите в навигацията на основната блог страница.
+- Добавен е отделен лимит за броя символи от описанието на категорията; по подразбиране **160 символа**.
+- Описанията в навигацията се превръщат в чист текст преди съкращаване, за да не се прекъсва HTML markup.
+- Съществуващата настройка за брой статии на страница се запазва при upgrade и не се презаписва принудително.
+
+### feat — English
+
+- New installations now default to **12 articles per page**.
+- Added **Article archive display: Grid / List** for the blog home and category archive pages.
+- Grid mode renders **3 articles per row** on desktop and adapts to 2/1 columns on smaller screens.
+- List mode uses horizontal responsive article cards with image, date, category, title, excerpt, and action button.
+- Added a setting to show/hide category descriptions in the blog-home category navigation.
+- Added a separate category-description character limit, defaulting to **160 characters**.
+- Category navigation descriptions are converted to plain text before truncation so HTML markup is never cut in the middle.
+- Existing article-per-page values are preserved during upgrades and are not forcibly overwritten.
+
 ## [1.5.0] - 2026-08-25
 
 ### feat — Български
