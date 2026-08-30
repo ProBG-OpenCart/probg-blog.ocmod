@@ -2,7 +2,7 @@
 
 [![Buy me a coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-Revolut-191C1F?logo=revolut&logoColor=white)](https://revolut.me/vtotev)
 
-**Current version:** `1.6.0`  
+**Current version:** `1.6.1`  
 **Status:** Stable  
 **OpenCart:** `3.0.2.x` / `3.0.3.x`
 
@@ -62,7 +62,7 @@
 
 ### Инсталация
 
-1. Изтеглете `probg-blog-1.6.0.ocmod.zip` от GitHub Release или директорията `dist/`.
+1. Изтеглете `probg-blog-1.6.1.ocmod.zip` от GitHub Release или директорията `dist/`.
 2. Отворете **Extensions → Installer** и качете OCMOD ZIP пакета.
 3. Отворете **Extensions → Modifications** и натиснете **Refresh**.
 4. Отворете **Extensions → Extensions → Modules** и инсталирайте **ProBG Blog**.
@@ -248,7 +248,7 @@ For OpenCart Layouts you can create **unlimited independent ProBG Blog menu inst
 
 ### Installation
 
-1. Download `probg-blog-1.6.0.ocmod.zip` from the GitHub Release or the `dist/` directory.
+1. Download `probg-blog-1.6.1.ocmod.zip` from the GitHub Release or the `dist/` directory.
 2. Open **Extensions → Installer** and upload the OCMOD ZIP package.
 3. Open **Extensions → Modifications** and click **Refresh**.
 4. Open **Extensions → Extensions → Modules** and install **ProBG Blog**.

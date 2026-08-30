@@ -3,7 +3,7 @@
   <nav aria-label="breadcrumb" class="probg-blog-breadcrumb">
     <ol class="breadcrumb">
       {% for breadcrumb in breadcrumbs %}
-        {% if loop.last %}<li class="breadcrumb-item active" aria-current="page">{{ breadcrumb.text }}</li>{% else %}<li class="breadcrumb-item"><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>{% endif %}
+        {% if loop.last %}<li class="breadcrumb-item active" aria-current="page">{{ breadcrumb.text }}</li>{% else %}<li class="breadcrumb-item"><a href="{{ breadcrumb.href }}" title="{{ breadcrumb.text }}">{{ breadcrumb.text }}</a></li>{% endif %}
       {% endfor %}
     </ol>
   </nav>
@@ -25,7 +25,7 @@
                 <div class="card h-100 border-0 shadow-sm probg-blog-category-card">
                   <div class="card-body">
                     <div class="d-flex align-items-start justify-content-between gap-3">
-                      <h3 class="h5 card-title mb-2"><a href="{{ category.href }}" class="text-decoration-none stretched-link">{{ category.title }}</a></h3>
+                      <h3 class="h5 card-title mb-2"><a href="{{ category.href }}" class="text-decoration-none stretched-link" title="{{ category.title }}">{{ category.title }}</a></h3>
                       <span class="badge rounded-pill text-bg-secondary">{{ category.article_count }}</span>
                     </div>
                     {% if category.description %}<p class="card-text text-muted mb-0">{{ category.description }}</p>{% endif %}
@@ -47,18 +47,18 @@
                   <div class="row probg-blog-list-row">
                     {% if article.image %}
                       <div class="col-sm-4 probg-blog-list-media-column">
-                        <a href="{{ article.href }}" class="probg-blog-card-image probg-blog-list-media"><img src="{{ article.image }}" alt="{{ article.title }}" class="img-fluid"></a>
+                        <a href="{{ article.href }}" class="probg-blog-card-image probg-blog-list-media" title="{{ article.title }}"><img src="{{ article.image }}" alt="{{ article.title }}" class="img-fluid"></a>
                       </div>
                     {% endif %}
                     <div class="{% if article.image %}col-sm-8{% else %}col-sm-12{% endif %} probg-blog-list-content-column">
                       <div class="card-body d-flex flex-column">
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-2 small">
                           <span class="text-muted">{{ article.date_added }}</span>
-                          {% if article.category_title %}<a href="{{ article.category_href }}" class="badge rounded-pill text-bg-light border text-decoration-none">{{ article.category_title }}</a>{% endif %}
+                          {% if article.category_title %}<a href="{{ article.category_href }}" class="badge rounded-pill text-bg-light border text-decoration-none" title="{{ article.category_title }}">{{ article.category_title }}</a>{% endif %}
                         </div>
-                        <h3 class="h4 card-title"><a href="{{ article.href }}" class="text-decoration-none">{{ article.title }}</a></h3>
+                        <h3 class="h4 card-title"><a href="{{ article.href }}" class="text-decoration-none" title="{{ article.title }}">{{ article.title }}</a></h3>
                         {% if article.short_description %}<div class="card-text text-muted flex-grow-1 mb-3">{{ article.short_description }}</div>{% endif %}
-                        <div class="mt-auto"><a href="{{ article.href }}" class="btn btn-primary">{{ text_read_more }}</a></div>
+                        <div class="mt-auto"><a href="{{ article.href }}" class="btn btn-primary" title="{{ text_read_more }}: {{ article.title }}">{{ text_read_more }}</a></div>
                       </div>
                     </div>
                   </div>
@@ -70,15 +70,15 @@
               {% for article in articles %}
                 <div class="col-12 col-sm-6 col-md-4">
                   <article class="card h-100 border-0 shadow-sm probg-blog-card">
-                    {% if article.image %}<a href="{{ article.href }}" class="probg-blog-card-image"><img src="{{ article.image }}" alt="{{ article.title }}" class="card-img-top img-fluid"></a>{% endif %}
+                    {% if article.image %}<a href="{{ article.href }}" class="probg-blog-card-image" title="{{ article.title }}"><img src="{{ article.image }}" alt="{{ article.title }}" class="card-img-top img-fluid"></a>{% endif %}
                     <div class="card-body d-flex flex-column">
                       <div class="d-flex flex-wrap align-items-center gap-2 mb-2 small">
                         <span class="text-muted">{{ article.date_added }}</span>
-                        {% if article.category_title %}<a href="{{ article.category_href }}" class="badge rounded-pill text-bg-light border text-decoration-none">{{ article.category_title }}</a>{% endif %}
+                        {% if article.category_title %}<a href="{{ article.category_href }}" class="badge rounded-pill text-bg-light border text-decoration-none" title="{{ article.category_title }}">{{ article.category_title }}</a>{% endif %}
                       </div>
-                      <h3 class="h4 card-title"><a href="{{ article.href }}" class="text-decoration-none">{{ article.title }}</a></h3>
+                      <h3 class="h4 card-title"><a href="{{ article.href }}" class="text-decoration-none" title="{{ article.title }}">{{ article.title }}</a></h3>
                       {% if article.short_description %}<div class="card-text text-muted flex-grow-1 mb-3">{{ article.short_description }}</div>{% endif %}
-                      <div class="mt-auto"><a href="{{ article.href }}" class="btn btn-primary">{{ text_read_more }}</a></div>
+                      <div class="mt-auto"><a href="{{ article.href }}" class="btn btn-primary" title="{{ text_read_more }}: {{ article.title }}">{{ text_read_more }}</a></div>
                     </div>
                   </article>
                 </div>
