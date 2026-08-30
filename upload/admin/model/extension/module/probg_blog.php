@@ -12,7 +12,7 @@ class ModelExtensionModuleProbgBlog extends Model {
         $this->ensureArticleRelatedSchema();
         $this->load->model('setting/setting');
         if ($this->config->get('module_probg_blog_version') === null) {
-            $this->model_setting_setting->editSetting('module_probg_blog', array('module_probg_blog_status'=>0,'module_probg_blog_sort'=>'date','module_probg_blog_limit'=>12,'module_probg_blog_list_display'=>'grid','module_probg_blog_category_nav_description_status'=>1,'module_probg_blog_category_nav_description_limit'=>160,'module_probg_blog_image_list_width'=>400,'module_probg_blog_image_list_height'=>260,'module_probg_blog_image_article_width'=>900,'module_probg_blog_image_article_height'=>600,'module_probg_blog_image_gallery_width'=>300,'module_probg_blog_image_gallery_height'=>220,'module_probg_blog_default_image'=>'','module_probg_blog_sitemap'=>1,'module_probg_blog_cache'=>1,'module_probg_blog_version'=>'1.6.1'));
+            $this->model_setting_setting->editSetting('module_probg_blog', array('module_probg_blog_status'=>0,'module_probg_blog_sort'=>'date','module_probg_blog_limit'=>12,'module_probg_blog_list_display'=>'grid','module_probg_blog_category_nav_description_status'=>1,'module_probg_blog_category_nav_description_limit'=>160,'module_probg_blog_image_list_width'=>400,'module_probg_blog_image_list_height'=>260,'module_probg_blog_image_article_width'=>900,'module_probg_blog_image_article_height'=>600,'module_probg_blog_image_gallery_width'=>300,'module_probg_blog_image_gallery_height'=>220,'module_probg_blog_default_image'=>'','module_probg_blog_sitemap'=>1,'module_probg_blog_cache'=>1,'module_probg_blog_version'=>'1.7.0'));
         }
     }
 
@@ -87,7 +87,7 @@ class ModelExtensionModuleProbgBlog extends Model {
         if (!isset($settings['module_probg_blog_list_display'])) $settings['module_probg_blog_list_display'] = 'grid';
         if (!isset($settings['module_probg_blog_category_nav_description_status'])) $settings['module_probg_blog_category_nav_description_status'] = 1;
         if (!isset($settings['module_probg_blog_category_nav_description_limit'])) $settings['module_probg_blog_category_nav_description_limit'] = 160;
-        $settings['module_probg_blog_version'] = '1.6.1';
+        $settings['module_probg_blog_version'] = '1.7.0';
         $this->model_setting_setting->editSetting('module_probg_blog', $settings);
         $this->cache->delete('probg_blog');
     }
