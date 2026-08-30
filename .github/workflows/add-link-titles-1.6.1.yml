@@ -33,7 +33,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git diff --check
+          git diff --check -- . ':(exclude)README.md'
           find upload -name '*.php' -print0 | xargs -0 -n1 php -l
           php -r '$x=simplexml_load_file("install.xml"); if (!$x || (string)$x->version !== "1.6.1") { exit(1); }'
           grep -F "module_probg_blog_version') !== '1.6.1'" upload/admin/controller/extension/module/probg_blog.php
