@@ -1,0 +1,66 @@
+name: Build ProBG Blog 1.6.0
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/build-probg-blog-1.6.0.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: feat/1.6.0-list-display-category-nav
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Apply README documentation work
+        run: |
+          git fetch origin docs/readme-descriptions-1.4.2
+          git checkout origin/docs/readme-descriptions-1.4.2 -- README.md
+
+      - name: Apply 1.6.0 changes
+        run: |
+          python3 .github/tmp_patch_probg_blog_1_6_0.py
+          rm .github/tmp_patch_probg_blog_1_6_0.py
+
+      - name: Validate PHP and XML
+        run: |
+          find upload -name '*.php' -print0 | xargs -0 -n1 php -l
+          php -r '$x=simplexml_load_file("install.xml"); if (!$x || (string)$x->version !== "1.6.0") { exit(1); }'
+
+      - name: Validate 1.6.0 settings and templates
+        run: |
+          grep -q "module_probg_blog_limit'=>12" upload/admin/model/extension/module/probg_blog.php
+          grep -q "module_probg_blog_list_display" upload/admin/controller/extension/module/probg_blog.php
+          grep -q "module_probg_blog_category_nav_description_status" upload/admin/controller/extension/module/probg_blog.php
+          grep -q "module_probg_blog_category_nav_description_limit" upload/catalog/controller/extension/module/probg_blog.php
+          grep -q "categoryNavigationDescription" upload/catalog/controller/extension/module/probg_blog.php
+          grep -q "article_display == 'list'" upload/catalog/view/theme/default/template/extension/module/probg_blog_list.twig
+          grep -q "col-12 col-sm-6 col-md-4" upload/catalog/view/theme/default/template/extension/module/probg_blog_list.twig
+          grep -q "article_display == 'list'" upload/catalog/view/theme/default/template/extension/module/probg_blog_category.twig
+          grep -q "probg-blog-card-list" upload/catalog/view/theme/default/stylesheet/probg_blog.css
+          grep -q "Current version.*1.6.0" README.md
+
+      - name: Commit feature branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add README.md CHANGELOG.md docs install.xml upload
+          git commit -m 'feat: add configurable blog archive layouts (1.6.0)'
+          git push origin HEAD:feat/1.6.0-list-display-category-nav
+
+      - name: Remove one-off workflow
+        run: |
+          git fetch origin main
+          git checkout -B main origin/main
+          git rm .github/workflows/build-probg-blog-1.6.0.yml
+          git commit -m 'chore: remove one-off 1.6.0 workflow'
+          git push origin main
