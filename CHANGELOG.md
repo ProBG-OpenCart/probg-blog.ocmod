@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.6.1] - 2026-08-30
+
+### fix — Български
+
+- Добавен е `title` атрибут към всички експлицитни линкове (`<a>`) в административните и frontend Twig шаблони на ProBG Blog.
+- Breadcrumbs, табове, категории, статии, изображения, свързани продукти, менюта и бутоните „Прочети още“ вече имат описателни title стойности.
+- Добавена е автоматична проверка при разработката, че в шаблоните не остава `<a>` елемент без `title`.
+
+### fix — English
+
+- Added a `title` attribute to every explicit link (`<a>`) in the ProBG Blog administration and storefront Twig templates.
+- Breadcrumbs, tabs, categories, articles, images, related products, menus, and Read More actions now have descriptive title values.
+- Added a development validation guard so no template `<a>` element is left without a `title` attribute.
+
 ## [1.6.0] - 2026-08-30
 
 ### feat — Български

@@ -7,16 +7,16 @@
         <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a>
       </div>
       <h1>{{ heading_title }}</h1>
-      <ul class="breadcrumb">{% for breadcrumb in breadcrumbs %}<li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>{% endfor %}</ul>
+      <ul class="breadcrumb">{% for breadcrumb in breadcrumbs %}<li><a href="{{ breadcrumb.href }}" title="{{ breadcrumb.text }}">{{ breadcrumb.text }}</a></li>{% endfor %}</ul>
     </div>
   </div>
   <div class="container-fluid">
     {% if error_warning %}<div class="alert alert-danger alert-dismissible"><i class="fa fa-exclamation-circle"></i> {{ error_warning }}<button type="button" class="close" data-dismiss="alert">&times;</button></div>{% endif %}
 
     <ul class="nav nav-tabs">
-      <li><a href="{{ settings_url }}">{{ tab_settings }}</a></li>
-      <li><a href="{{ categories_url }}">{{ tab_categories }}</a></li>
-      <li class="active"><a href="{{ articles_url }}">{{ tab_articles }}</a></li>
+      <li><a href="{{ settings_url }}" title="{{ tab_settings }}">{{ tab_settings }}</a></li>
+      <li><a href="{{ categories_url }}" title="{{ tab_categories }}">{{ tab_categories }}</a></li>
+      <li class="active"><a href="{{ articles_url }}" title="{{ tab_articles }}">{{ tab_articles }}</a></li>
     </ul>
 
     <div class="panel panel-default">
@@ -24,15 +24,15 @@
       <div class="panel-body">
         <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-article" class="form-horizontal">
           <ul class="nav nav-tabs">
-            <li class="active"><a href="#tab-content" data-toggle="tab">{{ text_content }}</a></li>
-            <li><a href="#tab-data" data-toggle="tab">{{ text_data }}</a></li>
-            <li><a href="#tab-images" data-toggle="tab">{{ text_images }}</a></li>
-            <li><a href="#tab-related" data-toggle="tab">{{ text_related }}</a></li>
+            <li class="active"><a href="#tab-content" data-toggle="tab" title="{{ text_content }}">{{ text_content }}</a></li>
+            <li><a href="#tab-data" data-toggle="tab" title="{{ text_data }}">{{ text_data }}</a></li>
+            <li><a href="#tab-images" data-toggle="tab" title="{{ text_images }}">{{ text_images }}</a></li>
+            <li><a href="#tab-related" data-toggle="tab" title="{{ text_related }}">{{ text_related }}</a></li>
           </ul>
 
           <div class="tab-content">
             <div id="tab-content" class="tab-pane active">
-              <ul class="nav nav-tabs" id="language">{% for language in languages %}<li><a href="#language{{ language.language_id }}" data-toggle="tab"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}"> {{ language.name }}</a></li>{% endfor %}</ul>
+              <ul class="nav nav-tabs" id="language">{% for language in languages %}<li><a href="#language{{ language.language_id }}" data-toggle="tab" title="{{ language.name }}"><img src="language/{{ language.code }}/{{ language.code }}.png" title="{{ language.name }}"> {{ language.name }}</a></li>{% endfor %}</ul>
               <div class="tab-content">
                 {% for language in languages %}
                   <div id="language{{ language.language_id }}" class="tab-pane">
@@ -57,14 +57,14 @@
             </div>
 
             <div id="tab-images" class="tab-pane">
-              <div class="form-group"><label class="col-sm-2 control-label">{{ text_main_image }}</label><div class="col-sm-10"><a href="" id="thumb-image" data-toggle="image" class="img-thumbnail"><img src="{{ thumb }}" data-placeholder="{{ placeholder }}"></a><input type="hidden" name="image" value="{{ image }}" id="input-image"></div></div>
+              <div class="form-group"><label class="col-sm-2 control-label">{{ text_main_image }}</label><div class="col-sm-10"><a href="" id="thumb-image" data-toggle="image" class="img-thumbnail" title="{{ text_main_image }}"><img src="{{ thumb }}" data-placeholder="{{ placeholder }}"></a><input type="hidden" name="image" value="{{ image }}" id="input-image"></div></div>
               <div class="table-responsive">
                 <table class="table table-bordered" id="images">
                   <thead><tr><td>{{ entry_image }}</td><td>{{ entry_sort_order }}</td><td></td></tr></thead>
                   <tbody>
                     {% set image_row = 0 %}
                     {% for article_image in article_images %}
-                      <tr id="image-row{{ image_row }}"><td><a href="" id="thumb-image{{ image_row }}" data-toggle="image" class="img-thumbnail"><img src="{{ article_image.thumb }}" data-placeholder="{{ placeholder }}"></a><input type="hidden" name="article_image[{{ image_row }}][image]" value="{{ article_image.image }}" id="input-image{{ image_row }}"></td><td><input type="number" name="article_image[{{ image_row }}][sort_order]" value="{{ article_image.sort_order }}" class="form-control"></td><td><button type="button" onclick="$('#image-row{{ image_row }}').remove();" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td></tr>
+                      <tr id="image-row{{ image_row }}"><td><a href="" id="thumb-image{{ image_row }}" data-toggle="image" class="img-thumbnail" title="{{ entry_image }}"><img src="{{ article_image.thumb }}" data-placeholder="{{ placeholder }}"></a><input type="hidden" name="article_image[{{ image_row }}][image]" value="{{ article_image.image }}" id="input-image{{ image_row }}"></td><td><input type="number" name="article_image[{{ image_row }}][sort_order]" value="{{ article_image.sort_order }}" class="form-control"></td><td><button type="button" onclick="$('#image-row{{ image_row }}').remove();" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td></tr>
                       {% set image_row = image_row + 1 %}
                     {% endfor %}
                   </tbody>
@@ -96,7 +96,7 @@
 $('#language a:first').tab('show');
 var image_row = {{ image_row|default(0) }};
 function addImage() {
-    var html = '<tr id="image-row' + image_row + '"><td><a href="" id="thumb-image' + image_row + '" data-toggle="image" class="img-thumbnail"><img src="{{ placeholder }}" data-placeholder="{{ placeholder }}"></a><input type="hidden" name="article_image[' + image_row + '][image]" value="" id="input-image' + image_row + '"></td><td><input type="number" name="article_image[' + image_row + '][sort_order]" value="0" class="form-control"></td><td><button type="button" onclick="$(\'#image-row' + image_row + '\').remove();" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td></tr>';
+    var html = '<tr id="image-row' + image_row + '"><td><a href="" id="thumb-image' + image_row + '" data-toggle="image" class="img-thumbnail" title="{{ entry_image }}"><img src="{{ placeholder }}" data-placeholder="{{ placeholder }}"></a><input type="hidden" name="article_image[' + image_row + '][image]" value="" id="input-image' + image_row + '"></td><td><input type="number" name="article_image[' + image_row + '][sort_order]" value="0" class="form-control"></td><td><button type="button" onclick="$(\'#image-row' + image_row + '\').remove();" class="btn btn-danger"><i class="fa fa-minus-circle"></i></button></td></tr>';
     $('#images tbody').append(html);
     image_row++;
 }
