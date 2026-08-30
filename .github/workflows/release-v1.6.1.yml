@@ -1,0 +1,108 @@
+name: Release ProBG Blog v1.6.1
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/release-v1.6.1.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      VERSION: '1.6.1'
+      TAG: 'v1.6.1'
+      PACKAGE: 'dist/probg-blog-1.6.1.ocmod.zip'
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate source version
+        shell: bash
+        run: |
+          set -euo pipefail
+          php -r '$x=simplexml_load_file("install.xml"); if (!$x || (string)$x->version !== "1.6.1") { fwrite(STDERR, "install.xml version mismatch\n"); exit(1); }'
+          grep -F "module_probg_blog_version') !== '1.6.1'" upload/admin/controller/extension/module/probg_blog.php
+          grep -F "version'] = '1.6.1';" upload/admin/controller/extension/module/probg_blog.php
+          grep -F '## [1.6.1]' CHANGELOG.md
+
+      - name: Build OpenCart installation package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          rm -f "$PACKAGE"
+          zip -qr "$PACKAGE" install.xml upload
+          unzip -Z1 "$PACKAGE" | grep -qx 'install.xml'
+          unzip -Z1 "$PACKAGE" | grep -q '^upload/'
+          test -s "$PACKAGE"
+
+      - name: Update SHA256 checksums
+        shell: bash
+        run: |
+          set -euo pipefail
+          checksum="$(sha256sum "$PACKAGE" | awk '{print $1}')"
+          grep -v '  probg-blog-1.6.1.ocmod.zip$' dist/SHA256SUMS > dist/SHA256SUMS.tmp || true
+          printf '%s  %s\n' "$checksum" "probg-blog-1.6.1.ocmod.zip" >> dist/SHA256SUMS.tmp
+          mv dist/SHA256SUMS.tmp dist/SHA256SUMS
+          sha256sum -c <(grep '  probg-blog-1.6.1.ocmod.zip$' dist/SHA256SUMS | sed 's#  #  dist/#')
+
+      - name: Commit installation package
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add "$PACKAGE" dist/SHA256SUMS
+          git commit -m 'release: add ProBG Blog v1.6.1 package'
+          git push origin HEAD:main
+
+      - name: Create v1.6.1 tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists" >&2
+            exit 1
+          fi
+          git tag "$TAG" HEAD
+          git push origin "$TAG"
+
+      - name: Prepare release notes
+        shell: bash
+        run: |
+          set -euo pipefail
+          awk '/^## \[1\.6\.1\]/{capture=1; next} /^## \[/{if(capture) exit} capture {print}' CHANGELOG.md > /tmp/release-notes.md
+          test -s /tmp/release-notes.md
+
+      - name: Create GitHub Release
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" "$PACKAGE" dist/SHA256SUMS \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "ProBG Blog $TAG" \
+            --notes-file /tmp/release-notes.md \
+            --verify-tag
+          gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json tagName,name,isDraft,isPrerelease,assets
+
+      - name: Remove one-off release workflow
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          git checkout -B main origin/main
+          git rm .github/workflows/release-v1.6.1.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git commit -m 'chore: remove v1.6.1 release workflow'
+          git push origin main
