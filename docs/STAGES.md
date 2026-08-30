@@ -29,3 +29,4 @@
 - 1.4.2 — unified List and Slider article cards in blog menu instances; List remains a static responsive grid.
 - 1.6.0 — added Grid/List blog archive layouts, 12-article default, and configurable category navigation descriptions.
 - Stage 29 / 1.6.1 — added descriptive title attributes to every explicit administration and storefront link, including dynamic image-picker links, with validation coverage.
+- Stage 30 / 1.7.0 — modernized the single article storefront with editorial typography, constrained reading width, hero media, upgraded gallery and related-product presentation.

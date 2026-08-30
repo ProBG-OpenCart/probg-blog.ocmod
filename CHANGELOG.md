@@ -1,5 +1,30 @@
 # Changelog
 
+## [1.7.0] - 2026-08-30
+
+### feat — Български
+
+- Преработен е изгледът на отделна статия с по-съвременна editorial композиция и по-добра визуална йерархия.
+- Добавени са category pill, по-голямо responsive заглавие и структуриран мета ред с дата на публикуване и редакция.
+- Основното изображение е оформено като голям hero блок с адаптивен размер и по-модерна рамка/сянка.
+- Ширината на основното съдържание е ограничена за по-добра четимост; подобрени са типографията, заглавията, списъците, цитатите, таблиците, линковете и изображенията в текста.
+- Краткото описание е оформено като отделен lead блок.
+- Галерията е обновена с модерни image cards, брояч и по-ясно lightbox действие.
+- Свързаните продукти са преместени в отделен визуален панел с по-съвременни product cards.
+- Новите стилове са изолирани в `probg_blog_article.css` и са scoped само към страницата на статията.
+- Запазена е съвместимостта с OpenCart 3 теми на Bootstrap 3 и Bootstrap 5.
+
+### feat — English
+
+- Redesigned the single article view with a modern editorial composition and stronger visual hierarchy.
+- Added a category pill, larger responsive title, and structured publication/modified metadata row.
+- Restyled the main image as a large responsive hero block.
+- Constrained the reading column and improved typography for headings, paragraphs, lists, quotes, tables, links, and inline images.
+- Restyled the excerpt as a dedicated lead block.
+- Modernized the gallery with image cards, item count, and clearer lightbox affordance.
+- Moved related products into a dedicated visual panel with modern product cards.
+- Isolated the new article styles in `probg_blog_article.css`, scoped only to the article page.
+- Preserved compatibility with OpenCart 3 themes using Bootstrap 3 or Bootstrap 5.
 ## [1.6.1] - 2026-08-30
 
 ### fix — Български
